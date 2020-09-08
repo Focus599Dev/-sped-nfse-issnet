@@ -29,13 +29,19 @@ class Parser
 
         $this->lote = new \stdClass();
 
+        $this->identificacaoRps = new \stdClass();
+
+        $this->infRps = new \stdClass();
+
+        $this->servico = new \stdClass();
+
+        $this->valores = new \stdClass();
+
         $this->lote->tomador = new \stdClass();
 
         $this->lote->prestador = new \stdClass();
 
         $this->cabecalho = new \stdClass();
-
-        $this->servico = new \stdClass();
 
         $this->structure = json_decode(file_get_contents($path), true);
 
@@ -110,74 +116,81 @@ class Parser
 
     private function aEntity($std)
     {
-        $this->loteRps = $std;
+        $this->loteRps = (object) array_merge((array) $this->loteRps, (array) $std);
     }
 
     private function bEntity($std)
     {
+        $cnpj = new \stdClass();
+
+        $cnpj = (object) array_merge((array) $cnpj, (array) $std);
+
+        $this->make->buildCpfCnpjPrestador($cnpj);
+
+        $InscricaoMunicipal = new \stdClass();
+
+        $InscricaoMunicipal = (object) array_merge((array) $InscricaoMunicipal, (array) $std);
+
+        $this->make->buildPrestador($InscricaoMunicipal);
+
         $this->loteRps = (object) array_merge((array) $this->loteRps, (array) $std);
 
-        $this->lote = (object) array_merge((array) $this->lote, (array) $std);
+        $this->make->buildCabec($this->loteRps);
     }
 
     private function cEntity($std)
     {
-        if ($std->TelefonePrest) {
-
-            $std->DDDPrestador = substr($std->TelefonePrest, 0, 2);
-            $std->TelefonePrest = substr($std->TelefonePrest, 2);
-        }
-
-        $this->cabecalho = (object) array_merge((array) $this->cabecalho, (array) $std);
-
-        $this->lote->prestador = (object) array_merge((array) $this->lote->prestador, (array) $std);
     }
 
     private function eEntity($std)
     {
-        $std->DDDTomador = substr($std->Telefone, 0, 2);
-        $std->Telefone = substr($std->Telefone, 2);
 
-        $this->lote->tomador = (object) array_merge((array) $this->lote->tomador, (array) $std);
+        $Tomador = new \stdClass();
+
+        $Tomador = (object) array_merge((array) $Tomador, (array) $std);
+
+        $this->make->buildTomador($Tomador);
+
+        $Endereco = new \stdClass();
+
+        $Endereco = (object) array_merge((array) $Endereco, (array) $std);
+
+        $this->make->buildEndereco($Endereco);
     }
 
     private function e02Entity($std)
     {
+        $cnpj = new \stdClass();
 
-        $this->lote->tomador = (object) array_merge((array) $this->lote->tomador, (array) $std);
+        $cnpj = (object) array_merge((array) $cnpj, (array) $std);
+
+        $this->make->buildCpfCnpjTomador($cnpj);
     }
 
     private function fEntity($std)
     {
-        $this->lote = (object) array_merge((array) $this->lote, (array) $std);
     }
 
     private function hEntity($std)
     {
-
-        $this->lote = (object) array_merge((array) $this->lote, (array) $std);
     }
 
     private function h01Entity($std)
     {
+        $this->identificacaoRps = (object) array_merge((array) $this->identificacaoRps, (array) $std);
 
-        $this->lote = (object) array_merge((array) $this->lote, (array) $std);
+        $this->make->buildIdentificacaoRps($this->identificacaoRps);
     }
 
     private function mEntity($std)
     {
-        $this->cabecalho = (object) array_merge((array) $this->cabecalho, (array) $std);
+        $this->valores = (object) array_merge((array) $this->valores, (array) $std);
 
-        $this->lote = (object) array_merge((array) $this->lote, (array) $std);
-
-        $this->servico = (object) array_merge((array) $this->servico, (array) $std);
+        $this->make->buildValores($this->valores);
     }
 
     private function nEntity($std)
     {
-
-        $this->lote = (object) array_merge((array) $this->lote, (array) $std);
-
         $this->servico = (object) array_merge((array) $this->servico, (array) $std);
 
         $this->make->buildServico($this->servico);
@@ -185,16 +198,8 @@ class Parser
 
     private function wEntity($std)
     {
-        $std->DataInit = substr($std->DataEmissao, 0, 10);
+        $this->infRps = (object) array_merge((array) $this->infRps, (array) $std);
 
-        $std->DataEnd = substr($std->DataEmissao, 0, 10);
-
-        $this->cabecalho = (object) array_merge((array) $this->cabecalho, (array) $std);
-
-        $this->make->buildCabec($this->cabecalho);
-
-        $this->lote = (object) array_merge((array) $this->lote, (array) $std);
-
-        $this->make->buildLote($this->lote);
+        $this->make->buildInfRps($this->infRps);
     }
 }
