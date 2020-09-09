@@ -96,7 +96,6 @@ class Make
         $firstItem->insertBefore($this->CpfCnpjPrestador, $firstItem->firstChild);
 
         $this->infRps->appendChild($this->Tomador);
-        
 
         $items = $this->infRps->getElementsByTagName('tc:Tomador');
 
@@ -108,10 +107,8 @@ class Make
 
         $this->Tomador->appendChild($this->Endereco);
 
-
         $this->xml = $this->dom->saveXML();
-        echo $this->xml;
-        die;
+
         return $this->xml;
     }
 
@@ -260,6 +257,7 @@ class Make
 
     public function buildServico($std)
     {
+
         $this->dom->addChild(
             $this->Servico,
             "tc:ItemListaServico",

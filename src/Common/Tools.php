@@ -2,6 +2,7 @@
 
 namespace NFePHP\NFSe\ISSNET\Common;
 
+use NFePHP\Common\Certificate;
 use NFePHP\NFSe\ISSNET\Soap\Soap;
 use NFePHP\Common\Validator;
 
@@ -16,11 +17,17 @@ class Tools
 
     public $pathSchemas;
 
-    public function __construct($configJson)
+    protected $algorithm = OPENSSL_ALGO_SHA1;
+
+    protected $canonical = [false, false, null, null];
+
+    public function __construct($configJson, Certificate $certificate)
     {
         $this->pathSchemas = realpath(
             __DIR__ . '/../../schemas'
         ) . '/';
+
+        $this->certificate = $certificate;
 
         $this->config = json_decode($configJson);
 
@@ -31,41 +38,46 @@ class Tools
         }
     }
 
-    protected function sendRequest($request, $soapUrl, $cnpj)
+    protected function sendRequest($request, $soapUrl)
     {
 
-        $soap = new Soap;
+        $soap = new Soap($this->certificate);
 
-        $response = $soap->send($request, $soapUrl, $cnpj);
+        $response = $soap->send($request, $soapUrl);
 
         return (string) $response;
     }
 
-    public function envelopXML($xml, $method)
+    public function envelopXML($xml)
     {
 
         $xml = trim(preg_replace("/<\?xml.*?\?>/", "", $xml));
 
         $this->xml =
-            '<proc:' . $method . ' soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-            <mensagemXml xsi:type="xsd:string"><![CDATA[' . $xml . ']]></mensagemXml>
-            </proc:' . $method . '>';
+            '<GerarNfseEnvio xmlns="http://www.abrasf.org.br/nfse.xsd">
+                <Rps xmlns="http://www.abrasf.org.br/nfse.xsd">'
+            . $xml .
+            '</Rps>
+            </GerarNfseEnvio>';
 
         return $this->xml;
     }
 
-    public function envelopSoapXML($xml)
+    public function removeStuffs($xml)
     {
-        $this->xml =
-            '<soapenv:Envelope  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                                xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-                                xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
-                                xmlns:proc="http://proces.wsnfe2.dsfnet.com.br">
-                <soapenv:Header/>
-                <soapenv:Body>' . $xml . '</soapenv:Body>
-            </soapenv:Envelope>';
 
-        return $this->xml;
+        if (preg_match('/<SOAP-ENV:Body>/', $xml)) {
+
+            $tag = '<SOAP-ENV:Body>';
+            $xml = substr($xml, (strpos($xml, $tag) + strlen($tag)), strlen($xml));
+
+            $tag = '</SOAP-ENV:Body>';
+            $xml = substr($xml, 0, strpos($xml, $tag));
+        }
+
+        $xml = trim($xml);
+
+        return $xml;
     }
 
     public function getLastRequest()
@@ -87,13 +99,5 @@ class Tools
             $body,
             $schema
         );
-    }
-
-    protected function getCNPJ($xml)
-    {
-
-        $xml = simplexml_load_string($xml);
-
-        return $cnpj = (string) $xml->Cabecalho->CPFCNPJRemetente;
     }
 }

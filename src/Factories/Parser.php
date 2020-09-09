@@ -144,7 +144,6 @@ class Parser
 
     private function eEntity($std)
     {
-
         $Tomador = new \stdClass();
 
         $Tomador = (object) array_merge((array) $Tomador, (array) $std);

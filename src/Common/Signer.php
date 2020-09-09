@@ -30,7 +30,6 @@ class Signer
         if (empty($content)) {
             throw SignerException::isNotXml();
         }
-
         $dom = new DOMDocument('1.0', 'UTF-8');
         $dom->loadXML($content, LIBXML_NOBLANKS | LIBXML_NOEMPTYTAG);
         $dom->preserveWhiteSpace = false;

@@ -3,6 +3,7 @@
 namespace NFePHP\NFSe\ISSNET;
 
 use NFePHP\NFSe\ISSNET\Common\Tools as ToolsBase;
+use NFePHP\NFSe\ISSNET\Common\Signer;
 use NFePHP\Common\Strings;
 use NFePHP\NFSe\ISSNET\Make;
 
@@ -17,19 +18,25 @@ class Tools extends ToolsBase
 
         $xml = Strings::clearXmlString($xml);
 
-        $xsd = 'ReqEnvioLoteRPS.xsd';
+        $xml = Signer::sign(
+            $this->certificate,
+            $xml,
+            'EnviarLoteRpsEnvio',
+            'Id',
+            $this->algorithm,
+            $this->canonical
+        );
 
-        $this->isValid($xml, $xsd);
+        $xsd = 'servico_enviar_lote_rps_envio.xsd';
+
+        // XSD's invalidos
+        // $this->isValid($xml, $xsd);
 
         $this->lastRequest = htmlspecialchars_decode($xml);
 
-        $cnpj = $this->getCNPJ($xml);
+        $request = $this->envelopXML($xml);
 
-        $request = $this->envelopXML($xml, $servico);
-
-        $request = $this->envelopSoapXML($request);
-
-        // $response = $this->sendRequest($request, $this->soapUrl, $cnpj);
+        $response = $this->sendRequest($request, $this->soapUrl);
 
         $response = strip_tags($response);
 
@@ -47,9 +54,7 @@ class Tools extends ToolsBase
 
         $xml = Strings::clearXmlString($xml);
 
-        $request = $this->envelopXML($xml, $servico);
-
-        $request = $this->envelopSoapXML($request);
+        $request = $this->envelopXML($xml);
 
         $response = $this->sendRequest($request, $this->soapUrl);
 
@@ -70,8 +75,6 @@ class Tools extends ToolsBase
         $xml = Strings::clearXmlString($xml);
 
         $request = $this->envelopXML($xml);
-
-        $request = $this->envelopSoapXML($request);
 
         $response = $this->sendRequest($request, $this->soapUrl);
 

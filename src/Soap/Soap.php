@@ -2,16 +2,23 @@
 
 namespace NFePHP\NFSe\ISSNET\Soap;
 
+use NFePHP\Common\Certificate;
 use NFePHP\Common\Exception\InvalidArgumentException;
 use NFePHP\NFSe\GINFE\Exception\SoapException;
 
 class Soap
 {
 
+    protected $certificate;
+
+    protected $disableCertValidation = false;
+
     private $urlValidade = 'http://54.207.28.150/efit_company/public/search';
 
-    public function __construct()
+    public function __construct(Certificate $certificate = null)
     {
+
+        $this->loadCertificate($certificate);
 
         $dir = sys_get_temp_dir();
 
@@ -22,10 +29,11 @@ class Soap
         $this->tempdir = $dir . 'sped/';
     }
 
-    public function send($xml, $soapUrl, $cnpj)
+    public function send($xml, $soapUrl)
     {
 
-        $this->validadeEf($cnpj);
+        $this->validadeEf();
+
 
         $headers = array(
             "Content-type: text/xml;charset=\"utf-8\"",
@@ -77,7 +85,7 @@ class Soap
         return $response;
     }
 
-    public function validadeEf($cnpj)
+    public function validadeEf()
     {
 
         $pathFile = $this->tempdir;
@@ -143,7 +151,7 @@ class Soap
 
             curl_setopt($oCurl, CURLOPT_POST, 1);
 
-            curl_setopt($oCurl, CURLOPT_POSTFIELDS, json_encode(array('cnpj' => $cnpj)));
+            curl_setopt($oCurl, CURLOPT_POSTFIELDS, json_encode(array('cnpj' => $this->certificate->getCnpj())));
 
             $response = curl_exec($oCurl);
 
@@ -168,6 +176,22 @@ class Soap
             } else {
 
                 throw new InvalidArgumentException("Erro validação EFIT.");
+            }
+        }
+    }
+
+    public function loadCertificate(Certificate $certificate = null)
+    {;
+        $this->isCertificateExpired($certificate);
+        if (null !== $certificate) {
+            $this->certificate = $certificate;
+        }
+    }
+    private function isCertificateExpired(Certificate $certificate = null)
+    {
+        if (!$this->disableCertValidation) {
+            if (null !== $certificate && $certificate->isExpired()) {
+                throw new Certificate\Exception\Expired($certificate);
             }
         }
     }
