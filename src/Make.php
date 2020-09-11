@@ -580,133 +580,181 @@ class Make
     public function cancelamento($std)
     {
 
-        $req = $this->dom->createElement('ns1:ReqCancelamentoNFSe');
-        $req->setAttribute('xmlns:ns1', 'http://localhost:8080/WsNFe2/lote');
-        $req->setAttribute('xsi:schemaLocation', 'http://localhost:8080/WsNFe2/lote http://localhost:8080/WsNFe2/xsd/ReqCancelamentoNFSe.xsd');
-        $req->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+        $req = $this->dom->createElement('p1:CancelarNfseEnvio');
+        $req->setAttribute('xmlns:p1', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_cancelar_nfse_envio.xsd');
+        $req->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
+        $req->setAttribute('xmlns:ts', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_simples.xsd');
         $this->dom->appendChild($req);
 
-        $cabecalho = $this->dom->createElement('Cabecalho');
-        $req->appendChild($cabecalho);
+        $pedido = $this->dom->createElement('Pedido');
+        $req->appendChild($pedido);
+
+        $infPedidoCancelamento = $this->dom->createElement('tc:InfPedidoCancelamento');
+        $pedido->appendChild($infPedidoCancelamento);
+
+        $identificacaoNfse = $this->dom->createElement('tc:IdentificacaoNfse');
+        $infPedidoCancelamento->appendChild($identificacaoNfse);
 
         $this->dom->addChild(
-            $cabecalho,
-            "CodCidade",
+            $identificacaoNfse,
+            "tc:Numero",
             $std->CodigoMunicipio,
             true,
-            "Código da cidade da declaração padrão SIAFI."
+            "Número da Nota Fiscal de Serviço Eletrônica, formado pelo ano com 04 (quatro) dígitos e um número seqüencial com 11 posições – 
+            Formato AAAANNNNNNNNNNN"
         );
 
         $this->dom->addChild(
-            $cabecalho,
-            "CPFCNPJRemetente",
-            $std->cnpj,
+            $identificacaoNfse,
+            "tc:Cnpj",
+            $std->CodigoMunicipio,
             true,
-            "CPF /CNPJ do remetente autorizado a transmitir o RPS"
+            "Número CNPJ"
         );
 
         $this->dom->addChild(
-            $cabecalho,
-            "transacao",
-            "true",
+            $identificacaoNfse,
+            "tc:InscricaoMunicipal",
+            $std->CodigoMunicipio,
             true,
-            "true - Se os RPS fazem parte de uma mesma transação."
+            "Inscrição Municipal"
         );
 
         $this->dom->addChild(
-            $cabecalho,
-            "Versao",
-            '1',
+            $identificacaoNfse,
+            "tc:CodigoMunicipio",
+            $std->CodigoMunicipio,
             true,
-            "Informe a versão do Schema XML. Padrão “1”"
-        );
-
-        $lote = $this->dom->createElement('Lote');
-        $lote->setAttribute('Id', 'lote:1ABCDZ');
-        $req->appendChild($lote);
-
-        $nota = $this->dom->createElement('Nota');
-        $nota->setAttribute('Nota', 'id:' . $std->Numero);
-        $lote->appendChild($nota);
-
-        $this->dom->addChild(
-            $lote,
-            "InscricaoMunicipalPrestador",
-            $std->InscricaoMunicipal,
-            true,
-            "Inscrição Municipal do Prestador"
+            "Código de identificação do município conforme tabela do IBGE"
         );
 
         $this->dom->addChild(
-            $lote,
-            "NumeroNota",
-            $std->Numero,
+            $infPedidoCancelamento,
+            "tc:CodigoCancelamento",
+            $std->CodigoMunicipio,
             true,
-            "Número da nota a ser cancelada"
+            "Código de cancelamento com base na tabela de Erros e alertas."
         );
 
-        $this->dom->addChild(
-            $lote,
-            "CodigoVerificacao",
-            $std->CodigoCancelamento,
-            true,
-            "Código de verificação da nota"
-        );
-
-        $this->dom->addChild(
-            $lote,
-            "MotivoCancelamento",
-            $std->observacao,
-            true,
-            "Motivo do cancelamento"
-        );
+        // $this->dom->addChild(
+        //     $infPedidoCancelamento,
+        //     "tc:MotivoCancelamentoNfse",
+        //     $std->CodigoMunicipio,
+        //     true,
+        //     "Motivo de cancelamento"
+        // );
 
         $this->xml = $this->dom->saveXML();
 
         return $this->xml;
     }
 
-    public function consulta($std, $codigoCidade)
+    public function consulta($std)
     {
-        $req = $this->dom->createElement('ns1:ReqConsultaLote');
-        $req->setAttribute('xmlns:ns1', 'http://localhost:8080/WsNFe2/lote');
-        $req->setAttribute('xsi:schemaLocation', 'http://localhost:8080/WsNFe2/lote http://localhost:8080/WsNFe2/xsd/ReqConsultaLote.xsd');
-        $req->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+        $req = $this->dom->createElement('ConsultarNfseEnvio');
+        $req->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_nfse_envio.xsd');
+        $req->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
         $this->dom->appendChild($req);
 
-        $cabecalho = $this->dom->createElement('Cabecalho');
-        $req->appendChild($cabecalho);
+        $prestador = $this->dom->createElement('Prestador');
+        $req->appendChild($prestador);
+
+        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        $prestador->appendChild($cpfCnpj);
 
         $this->dom->addChild(
-            $cabecalho,
-            "CodCidade",
-            $codigoCidade,
+            $cpfCnpj,
+            "tc:Cnpj",
+            $std->Cnpj,
             true,
-            "Código da cidade da declaração padrão SIAFI."
+            "Número CNPJ"
         );
 
         $this->dom->addChild(
-            $cabecalho,
-            "CPFCNPJRemetente",
-            $std->nfml_cnpj_emit,
+            $prestador,
+            "tc:InscricaoMunicipal",
+            $std->inscricaoMunicipal,
             true,
-            "CPF /CNPJ do remetente autorizado a transmitir o RPS"
+            "Inscrição Municipal"
         );
 
         $this->dom->addChild(
-            $cabecalho,
-            "Versao",
-            '1',
+            $req,
+            "NumeroNfse",
+            $std->numeroNfse,
             true,
-            "Informe a versão do Schema XML. Padrão “1”"
+            "Inscrição Municipal"
+        );
+
+        $periodoEmissao = $this->dom->createElement('PeriodoEmissao');
+        $req->appendChild($periodoEmissao);
+
+        $this->dom->addChild(
+            $periodoEmissao,
+            "DataInicial",
+            $std->numeroNfse,
+            true,
+            "Inscrição Municipal"
         );
 
         $this->dom->addChild(
-            $cabecalho,
-            "NumeroLote",
-            $std->nfml_rps,
+            $periodoEmissao,
+            "DataFinal",
+            $std->numeroNfse,
             true,
-            "Numero do lote a ser consultado"
+            "Inscrição Municipal"
+        );
+
+        $tomador = $this->dom->createElement('Tomador');
+        $req->appendChild($tomador);
+
+        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        $tomador->appendChild($cpfCnpj);
+
+        $this->dom->addChild(
+            $cpfCnpj,
+            "tc:Cnpj",
+            $std->Cnpj,
+            true,
+            "Número CNPJ"
+        );
+
+        $this->dom->addChild(
+            $tomador,
+            "tc:InscricaoMunicipal",
+            $std->inscricaoMunicipal,
+            true,
+            "Inscrição Municipal"
+        );
+
+        $intermediarioServico = $this->dom->createElement('IntermediarioServico');
+        $req->appendChild($intermediarioServico);
+
+        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        $intermediarioServico->appendChild($cpfCnpj);
+
+        $this->dom->addChild(
+            $cpfCnpj,
+            "tc:Cnpj",
+            $std->Cnpj,
+            true,
+            "Número CNPJ"
+        );
+
+        $this->dom->addChild(
+            $intermediarioServico,
+            "tc:RazaoSocial",
+            $std->RazaoSocial,
+            true,
+            "Razão Social"
+        );
+
+        $this->dom->addChild(
+            $intermediarioServico,
+            "tc:InscricaoMunicipal",
+            $std->inscricaoMunicipal,
+            true,
+            "Inscrição Municipal"
         );
 
         $this->xml = $this->dom->saveXML();

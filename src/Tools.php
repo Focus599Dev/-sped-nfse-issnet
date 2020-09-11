@@ -52,6 +52,15 @@ class Tools extends ToolsBase
 
         $xml = $make->cancelamento($std);
 
+        $xml = Signer::sign(
+            $this->certificate,
+            $xml,
+            'Pedido',
+            'Id',
+            $this->algorithm,
+            $this->canonical
+        );
+
         $xml = Strings::clearXmlString($xml);
 
         $request = $this->envelopXML($xml);
@@ -70,7 +79,7 @@ class Tools extends ToolsBase
 
         $make = new Make();
 
-        $xml = $make->consulta($std, $codigoCidade);
+        $xml = $make->consulta($std);
 
         $xml = Strings::clearXmlString($xml);
 
