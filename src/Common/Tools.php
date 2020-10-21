@@ -34,16 +34,16 @@ class Tools
         if ($this->config->tpAmb == '1') {
             $this->soapUrl = 'prod';
         } else {
-            $this->soapUrl = 'homolog';
+            $this->soapUrl = 'http://www.issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx?WSDL';
         }
     }
 
-    protected function sendRequest($request, $soapUrl)
+    protected function sendRequest($request, $soapUrl, $soapAction)
     {
 
         $soap = new Soap($this->certificate);
 
-        $response = $soap->send($request, $soapUrl);
+        $response = $soap->send($request, $soapUrl, $soapAction);
 
         return (string) $response;
     }
@@ -59,6 +59,21 @@ class Tools
             . $xml .
             '</Rps>
             </GerarNfseEnvio>';
+
+        return $this->xml;
+    }
+
+    public function envelopSOAP($xml, $service)
+    {
+        $this->xml =
+            '<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:nfd="http://www.issnetonline.com.br/webservice/nfd">
+            <soap:Header/>
+            <soap:Body>
+                <nfd:' . $service . '>
+                    <nfd:xml>' . $xml . '</nfd:xml>
+                </nfd:' . $service . '>
+            </soap:Body>
+        </soap:Envelope>';
 
         return $this->xml;
     }

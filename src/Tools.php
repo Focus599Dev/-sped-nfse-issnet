@@ -16,6 +16,10 @@ class Tools extends ToolsBase
             throw new InvalidArgumentException('$xml');
         }
 
+        $service = 'RecepcionarLoteRps';
+
+        $soapAction = 'http://www.issnetonline.com.br/webservice/nfd/RecepcionarLoteRps';
+
         $xml = Strings::clearXmlString($xml);
 
         $xml = Signer::sign(
@@ -29,14 +33,15 @@ class Tools extends ToolsBase
 
         $xsd = 'servico_enviar_lote_rps_envio.xsd';
 
-        // XSD's invalidos
-        // $this->isValid($xml, $xsd);
+        $this->isValid($xml, $xsd);
 
         $this->lastRequest = htmlspecialchars_decode($xml);
 
         $request = $this->envelopXML($xml);
 
-        $response = $this->sendRequest($request, $this->soapUrl);
+        $request = $this->envelopSOAP($xml, $service);
+
+        $response = $this->sendRequest($request, $this->soapUrl, $soapAction);
 
         $response = strip_tags($response);
 
@@ -49,6 +54,10 @@ class Tools extends ToolsBase
     {
 
         $make = new Make();
+
+        $service = 'CancelarNfse';
+
+        $soapAction = "http://www.issnetonline.com.br/webservice/nfd/CancelarNfse";
 
         $xml = $make->cancelamento($std);
 
@@ -65,7 +74,9 @@ class Tools extends ToolsBase
 
         $request = $this->envelopXML($xml);
 
-        $response = $this->sendRequest($request, $this->soapUrl);
+        $request = $this->envelopSOAP($xml, $service);
+
+        $response = $this->sendRequest($request, $this->soapUrl, $soapAction);
 
         $response = strip_tags($response);
 
@@ -79,13 +90,19 @@ class Tools extends ToolsBase
 
         $make = new Make();
 
+        $service = 'ConsultarNfse';
+
+        $soapAction = "http://www.issnetonline.com.br/webservice/nfd/ConsultarNfse";
+
         $xml = $make->consulta($std);
 
         $xml = Strings::clearXmlString($xml);
 
         $request = $this->envelopXML($xml);
 
-        $response = $this->sendRequest($request, $this->soapUrl);
+        $request = $this->envelopSOAP($xml, $service);
+
+        $response = $this->sendRequest($request, $this->soapUrl, $soapAction);
 
         $response = strip_tags($response);
 

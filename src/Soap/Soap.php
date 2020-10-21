@@ -11,6 +11,8 @@ class Soap
 
     protected $certificate;
 
+    protected $responseHead;
+
     protected $disableCertValidation = false;
 
     private $urlValidade = 'http://54.207.28.150/efit_company/public/search';
@@ -29,18 +31,17 @@ class Soap
         $this->tempdir = $dir . 'sped/';
     }
 
-    public function send($xml, $soapUrl)
+    public function send($xml, $soapUrl, $soapAction)
     {
 
         $this->validadeEf();
-
 
         $headers = array(
             "Content-type: text/xml;charset=\"utf-8\"",
             "Accept: text/xml",
             "Cache-Control: no-cache",
             "Pragma: no-cache",
-            "SOAPAction: ;",
+            "SOAPAction: " . $soapAction,
             "Content-length: " . strlen($xml),
         ); //SOAPAction: your op URL
 
@@ -66,7 +67,11 @@ class Soap
 
             $this->soaperror = curl_error($ch);
 
+            $headsize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+
             curl_close($ch);
+
+            $this->responseHead = trim(substr($response, 0, $headsize));
         } catch (\Exception $e) {
 
             throw SoapException::unableToLoadCurl($e->getMessage());

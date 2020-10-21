@@ -475,7 +475,7 @@ class Make
         $this->dom->addChild(
             $this->Prestador,
             "tc:InscricaoMunicipal",
-            $std->Cnpj,
+            $std->InscricaoMunicipal,
             true,
             "Inscrição Municipal da empresa/pessoa"
         );
