@@ -40,9 +40,9 @@ class Tools extends ToolsBase
         $request = $this->envelopXML($xml);
 
         $request = $this->envelopSOAP($xml, $service);
-
+        echo $xml;
         $response = $this->sendRequest($request, $this->soapUrl, $soapAction);
-
+        echo $response;
         $response = strip_tags($response);
 
         $response = htmlspecialchars_decode($response);

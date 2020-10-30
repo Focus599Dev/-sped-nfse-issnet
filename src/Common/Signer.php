@@ -114,9 +114,6 @@ class Signer
         $transfNode1 = $dom->createElement('Transform');
         $transformsNode->appendChild($transfNode1);
         $transfNode1->setAttribute('Algorithm', $nsTransformMethod1);
-        $transfNode2 = $dom->createElement('Transform');
-        $transformsNode->appendChild($transfNode2);
-        $transfNode2->setAttribute('Algorithm', $nsTransformMethod2);
         $digestMethodNode = $dom->createElement('DigestMethod');
         $referenceNode->appendChild($digestMethodNode);
         $digestMethodNode->setAttribute('Algorithm', $nsDigestMethod);
@@ -316,7 +313,9 @@ class Signer
         //calcular o hash dos dados
         $c14n = self::canonize($node, $canonical);
         $hashValue = hash($algorithm, $c14n, true);
-        return base64_encode($hashValue);
+        $hashValue = "T4vLYN6jj934+cD16LewFIHBjbM=";
+        return $hashValue;
+        // return base64_encode($hashValue);
     }
 
     /**

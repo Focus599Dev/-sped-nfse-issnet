@@ -242,17 +242,17 @@ class Make
             2 – Cancelado"
         );
 
-        $this->dom->addChild(
-            $this->infRps,
-            "tc:RegimeEspecialTributacao",
-            $std->RegimeEspecialTributacao,
-            true,
-            "Código de identificação do regime especial de tributação
-            1 – Microempresa municipal
-            2 - Estimativa
-            3 – Sociedade de profissionais
-            4 – Cooperativa"
-        );
+        // $this->dom->addChild(
+        //     $this->infRps,
+        //     "tc:RegimeEspecialTributacao",
+        //     $std->RegimeEspecialTributacao,
+        //     true,
+        //     "Código de identificação do regime especial de tributação
+        //     1 – Microempresa municipal
+        //     2 - Estimativa
+        //     3 – Sociedade de profissionais
+        //     4 – Cooperativa"
+        // );
     }
 
     public function buildServico($std)
