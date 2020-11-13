@@ -34,46 +34,34 @@ class Tools
         if ($this->config->tpAmb == '1') {
             $this->soapUrl = 'prod';
         } else {
-            $this->soapUrl = 'http://www.issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx?WSDL';
+            $this->soapUrl = 'https://issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx';
+            // $this->soapUrl = 'https://www.issnetonline.com.br/webserviceabrasf/ribeiraopreto/servicos.asmx';
         }
+
+        $this->soap = new Soap($this->certificate);
     }
 
-    protected function sendRequest($request, $soapUrl, $soapAction)
+    protected function sendRequest($url, $soapAction, $action, $soapEver, $paranmeters = [], $namespaces= [], $request)
     {
 
-        $soap = new Soap($this->certificate);
+        if (!$this->soap)
+            $this->soap = new Soap($this->certificate);
 
-        $response = $soap->send($request, $soapUrl, $soapAction);
+        $response = $this->soap->send($url, $soapAction, $action, $soapEver,  $paranmeters, $namespaces , $request);
 
         return (string) $response;
     }
 
-    public function envelopXML($xml)
-    {
-
-        $xml = trim(preg_replace("/<\?xml.*?\?>/", "", $xml));
-
-        $this->xml =
-            '<GerarNfseEnvio xmlns="http://www.abrasf.org.br/nfse.xsd">
-                <Rps xmlns="http://www.abrasf.org.br/nfse.xsd">'
-            . $xml .
-            '</Rps>
-            </GerarNfseEnvio>';
-
-        return $this->xml;
-    }
-
     public function envelopSOAP($xml, $service)
     {
-        $this->xml =
-            '<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:nfd="http://www.issnetonline.com.br/webservice/nfd">
-            <soap:Header/>
-            <soap:Body>
-                <nfd:' . $service . '>
-                    <nfd:xml>' . $xml . '</nfd:xml>
-                </nfd:' . $service . '>
-            </soap:Body>
-        </soap:Envelope>';
+        $this->xml = '<?xml version="1.0" encoding="utf-8"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+                <soap:Body>
+                    <tns:' . $service . ' xmlns:tns="http://www.issnetonline.com.br/webservice/nfd">
+                        <tns:xml>' . htmlspecialchars($xml) . '</tns:xml>
+                    </tns:' . $service . '>
+                </soap:Body>
+            </soap:Envelope>';
 
         return $this->xml;
     }
@@ -81,12 +69,12 @@ class Tools
     public function removeStuffs($xml)
     {
 
-        if (preg_match('/<SOAP-ENV:Body>/', $xml)) {
+        if (preg_match('/<soap:Body>/', $xml)) {
 
-            $tag = '<SOAP-ENV:Body>';
+            $tag = '<soap:Body>';
             $xml = substr($xml, (strpos($xml, $tag) + strlen($tag)), strlen($xml));
 
-            $tag = '</SOAP-ENV:Body>';
+            $tag = '</soap:Body>';
             $xml = substr($xml, 0, strpos($xml, $tag));
         }
 
