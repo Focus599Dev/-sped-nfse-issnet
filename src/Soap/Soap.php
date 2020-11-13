@@ -5,64 +5,82 @@ namespace NFePHP\NFSe\ISSNET\Soap;
 use NFePHP\Common\Certificate;
 use NFePHP\Common\Exception\InvalidArgumentException;
 use NFePHP\NFSe\GINFE\Exception\SoapException;
+use NFePHP\NFSe\ISSNET\Soap\SoapBase;
 
-class Soap
-{
+class Soap extends SoapBase{ 
 
-    protected $certificate;
-
-    protected $responseHead;
-
-    protected $disableCertValidation = false;
-
-    private $urlValidade = 'http://54.207.28.150/efit_company/public/search';
-
-    public function __construct(Certificate $certificate = null)
-    {
-
-        $this->loadCertificate($certificate);
-
-        $dir = sys_get_temp_dir();
-
-        if (substr($dir, -1) != '/') {
-            $dir =  $dir . '/';
-        }
-
-        $this->tempdir = $dir . 'sped/';
-    }
-
-    public function send($xml, $soapUrl, $soapAction)
-    {
+    public function send(
+        $url,
+        $operation = '',
+        $action = '',
+        $soapver = SOAP_1_2,
+        $parameters = [],
+        $namespaces = [],
+        $request = '',
+        $soapheader = null
+    ) {
 
         $this->validadeEf();
 
         $headers = array(
-            "Content-type: text/xml;charset=\"utf-8\"",
-            "Accept: text/xml",
-            "Cache-Control: no-cache",
-            "Pragma: no-cache",
-            "SOAPAction: " . $soapAction,
-            "Content-length: " . strlen($xml),
-        ); //SOAPAction: your op URL
+            "Content-Type: text/xml;charset=UTF-8;",
+            "SOAPAction: \"$operation\"",
+            "Content-Length: " . strlen($request)
+        ); 
 
         try {
 
             $ch = curl_init();
 
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-            // curl_setopt($ch, CURLOPT_IPRESOLVE, CURLOPT_IPRESOLVE_V4);
-            curl_setopt($ch, CURLOPT_SSLVERSION, 4);
-            curl_setopt($ch, CURLOPT_URL, $soapUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 40);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $xml);
+            curl_setopt($ch, CURLOPT_URL, $url);
+
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $this->soaptimeout);
+
+            curl_setopt($ch, CURLOPT_TIMEOUT, $this->soaptimeout + 20);
+
+            curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+
+            curl_setopt($ch, CURLOPT_POST, 1);
+
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $request);
+
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-            $response = curl_exec($ch);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
 
+            curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+            curl_setopt($ch, CURLOPT_SSLVERSION, 6);
+
+            curl_setopt($ch, CURLOPT_SSLCERT, $this->tempdir . $this->certfile);
+            
+            curl_setopt($ch, CURLOPT_SSLKEY, $this->tempdir . $this->prifile);
+
+            if (!empty($this->temppass)) {
+
+                curl_setopt($ch, CURLOPT_KEYPASSWD, $this->temppass);
+
+            }
+
+            if (!$this->disablesec) {
+                
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+
+                if (is_file($this->casefaz)) {
+
+                    curl_setopt($ch, CURLOPT_CAINFO, $this->casefaz);
+
+                }
+            }
+
+            $response = curl_exec($ch);
+            
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
             $this->soaperror = curl_error($ch);
@@ -72,6 +90,7 @@ class Soap
             curl_close($ch);
 
             $this->responseHead = trim(substr($response, 0, $headsize));
+
         } catch (\Exception $e) {
 
             throw SoapException::unableToLoadCurl($e->getMessage());
@@ -79,125 +98,15 @@ class Soap
 
         if ($this->soaperror != '') {
 
-            throw SoapException::soapFault($this->soaperror . " [$soapUrl]");
+            throw SoapException::soapFault($this->soaperror . " [$url]");
         }
 
         if ($httpcode != 200) {
 
-            throw SoapException::soapFault(" [$soapUrl]" . $this->responseHead);
+            throw SoapException::soapFault(" [$url]" . $this->responseHead);
         }
 
         return $response;
     }
 
-    public function validadeEf()
-    {
-
-        $pathFile = $this->tempdir;
-
-        $nameFile = 'temp-validate-ef.txt';
-
-        $fullPath = $pathFile . $nameFile;
-
-        $check = false;
-
-        $data = null;
-
-        try {
-
-            if (is_file($fullPath)) {
-
-                $data = file_get_contents($fullPath);
-            }
-        } catch (\Exception $e) {
-        }
-
-        if ($data) {
-
-            $data = json_decode($data);
-
-            if ($data->status == 0) {
-                $check = true;
-            }
-        } else {
-
-            $data = new \stdClass();
-
-            $auxDt = new \DateTime();
-
-            $auxDt->modify('-30 minutes');
-
-            $data->last_request = $auxDt->format('Y-m-d H:i:s');
-
-            $data->status = '1';
-        }
-
-        $dt = new \DateTime($data->last_request);
-
-        $now = new \DateTime();
-
-        $diff = $now->diff($dt);
-
-        $minutes = 0;
-
-        $minutes = $diff->days * 24 * 60;
-
-        $minutes += $diff->h * 60;
-
-        $minutes += $diff->i;
-
-        if ($minutes > 15 || $check) {
-
-            $oCurl = curl_init();
-
-            curl_setopt($oCurl, CURLOPT_URL, $this->urlValidade);
-
-            curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, 1);
-
-            curl_setopt($oCurl, CURLOPT_POST, 1);
-
-            curl_setopt($oCurl, CURLOPT_POSTFIELDS, json_encode(array('cnpj' => $this->certificate->getCnpj())));
-
-            $response = curl_exec($oCurl);
-
-            if ($response) {
-
-                $response = json_decode($response);
-
-                $data->last_request = $now->format('Y-m-d H:i:s');
-
-                $data->status = $response->status;
-
-                try {
-
-                    file_put_contents($fullPath, json_encode($data));
-                } catch (\Exception $e) {
-                }
-
-                if (!$data->status) {
-
-                    throw new InvalidArgumentException("Erro validação EFIT.");
-                }
-            } else {
-
-                throw new InvalidArgumentException("Erro validação EFIT.");
-            }
-        }
-    }
-
-    public function loadCertificate(Certificate $certificate = null)
-    {;
-        $this->isCertificateExpired($certificate);
-        if (null !== $certificate) {
-            $this->certificate = $certificate;
-        }
-    }
-    private function isCertificateExpired(Certificate $certificate = null)
-    {
-        if (!$this->disableCertValidation) {
-            if (null !== $certificate && $certificate->isExpired()) {
-                throw new Certificate\Exception\Expired($certificate);
-            }
-        }
-    }
 }
