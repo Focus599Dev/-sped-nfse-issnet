@@ -24,6 +24,7 @@ class Make
         $this->enviarLoteRpsEnvio = $this->dom->createElement('EnviarLoteRpsEnvio');
         $this->enviarLoteRpsEnvio->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_enviar_lote_rps_envio.xsd');
         $this->enviarLoteRpsEnvio->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
+
         $this->dom->appendChild($this->enviarLoteRpsEnvio);
 
         $this->loteRps = $this->dom->createElement('LoteRps');
@@ -580,25 +581,32 @@ class Make
     public function cancelamento($std)
     {
 
+        $this->dom = new Dom();
+
+        $this->dom->preserveWhiteSpace = false;
+
+        $this->dom->formatOutput = false;
+
         $req = $this->dom->createElement('p1:CancelarNfseEnvio');
+        
         $req->setAttribute('xmlns:p1', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_cancelar_nfse_envio.xsd');
+        
         $req->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
+        
         $req->setAttribute('xmlns:ts', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_simples.xsd');
+
         $this->dom->appendChild($req);
 
         $pedido = $this->dom->createElement('Pedido');
-        $req->appendChild($pedido);
 
         $infPedidoCancelamento = $this->dom->createElement('tc:InfPedidoCancelamento');
-        $pedido->appendChild($infPedidoCancelamento);
 
         $identificacaoNfse = $this->dom->createElement('tc:IdentificacaoNfse');
-        $infPedidoCancelamento->appendChild($identificacaoNfse);
 
         $this->dom->addChild(
             $identificacaoNfse,
             "tc:Numero",
-            $std->CodigoMunicipio,
+            $std->Numero,
             true,
             "Número da Nota Fiscal de Serviço Eletrônica, formado pelo ano com 04 (quatro) dígitos e um número seqüencial com 11 posições – 
             Formato AAAANNNNNNNNNNN"
@@ -607,7 +615,7 @@ class Make
         $this->dom->addChild(
             $identificacaoNfse,
             "tc:Cnpj",
-            $std->CodigoMunicipio,
+            $std->cnpj,
             true,
             "Número CNPJ"
         );
@@ -615,7 +623,7 @@ class Make
         $this->dom->addChild(
             $identificacaoNfse,
             "tc:InscricaoMunicipal",
-            $std->CodigoMunicipio,
+            $std->InscricaoMunicipal,
             true,
             "Inscrição Municipal"
         );
@@ -628,25 +636,206 @@ class Make
             "Código de identificação do município conforme tabela do IBGE"
         );
 
+        $infPedidoCancelamento->appendChild($identificacaoNfse);
+
         $this->dom->addChild(
             $infPedidoCancelamento,
             "tc:CodigoCancelamento",
-            $std->CodigoMunicipio,
+            $std->CodigoCancelamento,
             true,
             "Código de cancelamento com base na tabela de Erros e alertas."
         );
 
-        // $this->dom->addChild(
-        //     $infPedidoCancelamento,
-        //     "tc:MotivoCancelamentoNfse",
-        //     $std->CodigoMunicipio,
-        //     true,
-        //     "Motivo de cancelamento"
-        // );
+        $pedido->appendChild($infPedidoCancelamento);
+
+        $req->appendChild($pedido);
+        
+        $this->dom->appendChild($req);
 
         $this->xml = $this->dom->saveXML();
 
         return $this->xml;
+    }
+
+    public function consultaSituacao($std){
+
+        $this->dom = new Dom();
+
+        $this->dom->preserveWhiteSpace = false;
+
+        $this->dom->formatOutput = false;
+
+        $req = $this->dom->createElement('ConsultarSituacaoLoteRpsEnvio');
+
+        $req->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_situacao_lote_rps_envio.xsd');
+        
+        $req->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
+
+        $prestador = $this->dom->createElement('Prestador');
+
+        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        
+        $this->dom->addChild(
+            $cpfCnpj,
+            "tc:Cnpj",
+            $std->cnpj,
+            true,
+            "Número CNPJ"
+        );
+        
+        $prestador->appendChild($cpfCnpj);
+
+        $this->dom->addChild(
+            $prestador,
+            "tc:InscricaoMunicipal",
+            $std->inscricaoMunicipal,
+            true,
+            "Inscrição Municipal"
+        );
+
+        $req->appendChild($prestador);
+
+        $this->dom->addChild(
+            $req,
+            "Protocolo",
+            $std->protocolo,
+            true,
+            "Protocolo"
+        );
+
+        $this->dom->appendChild($req);
+
+        $this->xml = $this->dom->saveXML();
+
+        return $this->xml;
+        
+    }
+
+    public function consultaNFSePorRPS($std, $prest){
+
+        $this->dom = new Dom();
+
+        $this->dom->preserveWhiteSpace = false;
+
+        $this->dom->formatOutput = false;
+
+        $req = $this->dom->createElement('ConsultarNfseRpsEnvio');
+        
+        $req->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_nfse_rps_envio.xsd');
+        
+        $req->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
+
+        $identificacaoRps = $this->dom->createElement('IdentificacaoRps');
+
+        $this->dom->addChild(
+            $identificacaoRps,
+            "tc:Numero",
+            $std->Numero,
+            true,
+            "Número RPS"
+        );
+
+        $this->dom->addChild(
+            $identificacaoRps,
+            "tc:Serie",
+            $std->Serie,
+            true,
+            "Serie RPS"
+        );
+
+        $this->dom->addChild(
+            $identificacaoRps,
+            "tc:Tipo",
+            $std->Tipo,
+            true,
+            "Tipo RPS"
+        );
+
+        $req->appendChild($identificacaoRps);
+        
+        $prestador = $this->dom->createElement('Prestador');
+
+        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+
+        $this->dom->addChild(
+            $cpfCnpj,
+            "tc:Cnpj",
+            $prest->cnpj,
+            true,
+            "Número CNPJ"
+        );
+
+        $this->dom->addChild(
+            $prestador,
+            "tc:InscricaoMunicipal",
+            $prest->inscricaoMunicipal,
+            true,
+            "Inscrição Municipal"
+        );
+        
+        $prestador->appendChild($cpfCnpj);
+
+        $req->appendChild($prestador);
+
+        $this->dom->appendChild($req);
+
+        $this->xml = $this->dom->saveXML();
+
+        return $this->xml;
+    }
+
+    public function consultaLoteRPS($nprot, $data){
+
+        $this->dom = new Dom();
+
+        $this->dom->preserveWhiteSpace = false;
+
+        $this->dom->formatOutput = false;
+
+        $req = $this->dom->createElement('ConsultarLoteRpsEnvio');
+        
+        $req->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_lote_rps_envio.xsd');
+        
+        $req->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
+
+        $prestador = $this->dom->createElement('Prestador');
+
+        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+
+        $this->dom->addChild(
+            $cpfCnpj,
+            "tc:Cnpj",
+            $data->cnpj,
+            true,
+            "Número CNPJ"
+        );
+
+        $this->dom->addChild(
+            $prestador,
+            "tc:InscricaoMunicipal",
+            $data->inscricaoMunicipal,
+            true,
+            "Inscrição Municipal"
+        );
+        
+        $prestador->appendChild($cpfCnpj);
+
+        $req->appendChild($prestador);
+
+        $this->dom->addChild(
+            $req,
+            "Protocolo",
+            $nprot,
+            true,
+            "Protocolo de aprovacao"
+        );
+
+        $this->dom->appendChild($req);
+
+        $this->xml = $this->dom->saveXML();
+
+        return $this->xml;
+
     }
 
     public function consulta($std)
