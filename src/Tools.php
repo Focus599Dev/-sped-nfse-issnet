@@ -6,6 +6,7 @@ use NFePHP\NFSe\ISSNET\Common\Tools as ToolsBase;
 use NFePHP\NFSe\ISSNET\Common\Signer;
 use NFePHP\Common\Strings;
 use NFePHP\NFSe\ISSNET\Make;
+use Mpdf\Mpdf;
 
 class Tools extends ToolsBase
 {
@@ -32,15 +33,15 @@ class Tools extends ToolsBase
         $xml = Strings::clearXmlString($xml);
 
         $xsd = 'servico_enviar_lote_rps_envio.xsd';
-        
+
         $this->isValid($xml, $xsd);
 
         $this->lastRequest = htmlspecialchars_decode($xml);
 
         $request = $this->envelopSOAP($xml, $service);
 
-        $response = $this->sendRequest($this->soapUrl, $soapAction, 'RecepcionarLoteRps', 3, [], [] , $request);
-        
+        $response = $this->sendRequest($this->soapUrl, $soapAction, 'RecepcionarLoteRps', 3, [], [], $request);
+
         $response = html_entity_decode($response);
 
         $response = trim(preg_replace("/<\?xml.*?\?>/", "", $response));
@@ -71,12 +72,12 @@ class Tools extends ToolsBase
         );
 
         $xsd = 'servico_cancelar_nfse_envio.xsd';
-        
+
         $this->isValid($xml, $xsd);
 
         $request = $this->envelopSOAP($xml, $service);
 
-        $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [] , $request);
+        $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [], $request);
 
         $response = html_entity_decode($response);
 
@@ -87,7 +88,8 @@ class Tools extends ToolsBase
         return $response;
     }
 
-    public function consultaSituacaoLoteRPS($nprot, \stdClass $std){
+    public function consultaSituacaoLoteRPS($nprot, \stdClass $std)
+    {
 
         $std->protocolo = $nprot;
 
@@ -103,7 +105,7 @@ class Tools extends ToolsBase
 
         $request = $this->envelopSOAP($xml, $service);
 
-        $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [] , $request);
+        $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [], $request);
 
         $response = html_entity_decode($response);
 
@@ -114,7 +116,8 @@ class Tools extends ToolsBase
         return $response;
     }
 
-    public function ConsultarNfsePorRps($indenRPS, $data){
+    public function ConsultarNfsePorRps($indenRPS, $data)
+    {
 
         $make = new Make();
 
@@ -125,14 +128,14 @@ class Tools extends ToolsBase
         $xml = $make->consultaNFSePorRPS($indenRPS, $data);
 
         $xsd = 'servico_consultar_nfse_rps_envio.xsd';
-        
+
         $this->isValid($xml, $xsd);
 
         $xml = Strings::clearXmlString($xml);
 
         $request = $this->envelopSOAP($xml, $service);
 
-        $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [] , $request);
+        $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [], $request);
 
         $response = html_entity_decode($response);
 
@@ -141,10 +144,10 @@ class Tools extends ToolsBase
         $response = $this->removeStuffs($response);
 
         return $response;
-
     }
 
-    public function consultaLoteRPS($nprot, $data){
+    public function consultaLoteRPS($nprot, $data)
+    {
 
         $make = new Make();
 
@@ -158,7 +161,7 @@ class Tools extends ToolsBase
 
         $request = $this->envelopSOAP($xml, $service);
 
-        $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [] , $request);
+        $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [], $request);
 
         $response = html_entity_decode($response);
 
@@ -167,6 +170,90 @@ class Tools extends ToolsBase
         $response = $this->removeStuffs($response);
 
         return $response;
+    }
 
+    public function generatePDFNfse($xml, $tpAmb, $status, $logoPath)
+    {
+        $template = file_get_contents(realpath(__DIR__ . '/../template') . '/nfse.html');
+
+        $contentlogoPres = '';
+
+        if (is_file($logoPath)) {
+
+            $contentlogoPres = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+        }
+
+        $codeTrib = array(
+            '1401' => 'Lubrifica&ccedil;&atilde;o, limpeza, lustra&ccedil;&atilde;o, revis&atilde;o, carga e recarga, conserto, restaura&ccedil;&atilde;o, blindagem, manuten&ccedil;&atilde;o e conserva&ccedil;&atilde;o de m&aacute;quinas, ve&iacute;culos, aparelhos, equipamentos, motores, elevadores ou de qualquer objeto (exceto pe&ccedil;as e partes empregadas, que ficam sujeitas ao ICMS)'
+        );
+
+        $replace = array(
+            'logo' =>  'data:image/png;base64,' . base64_encode(file_get_contents(realpath(__DIR__ . '/../template') . '/brasao.png')),
+            'nfenum' => $xml->Nfse->InfNfse->IdentificacaoRps->Numero,
+            'serie' => $xml->Nfse->InfNfse->IdentificacaoRps->Serie,
+            'dhemi' => (new \DateTime($xml->Nfse->InfNfse->DataEmissao))->format('d/m/Y'),
+            'dhEmisec' => (new \DateTime($xml->Nfse->InfNfse->DataEmissao))->format('d/m/Y H:i'),
+            'dhcomp' => (new \DateTime($xml->Nfse->InfNfse->DataEmissao))->format('m/Y'),
+            'xMun' => $xml->Nfse->InfNfse->PrestadorServico->Endereco->Uf,
+            'regimeTrib' => $xml->Nfse->InfNfse->RegimeEspecialTributacao ? 'Nenhum' : 'Esp&eacute;cial',
+            'naturesaop' => $xml->Nfse->InfNfse->NaturezaOperacao == 1 ? 'Trib. no munic&#237;pio de Uberaba' : 'Trib. forfor&aacute; munic&#237;pio de Uberaba',
+            'nfsserie' => substr($xml->Nfse->InfNfse->Numero, 0, 7),
+            'nfsnum' => substr($xml->Nfse->InfNfse->Numero, 7),
+            'codveri' => $xml->Nfse->InfNfse->CodigoVerificacao,
+            'emirazao' => $xml->Nfse->InfNfse->PrestadorServico->RazaoSocial,
+            'emicnpj' => $this->formatCNPJ($xml->Nfse->InfNfse->PrestadorServico->IdentificacaoPrestador->Cnpj),
+            'email' => $xml->Nfse->InfNfse->PrestadorServico->Contato->Email,
+            'logoPres' => $contentlogoPres,
+            'inscMuniEmi' => $xml->Nfse->InfNfse->PrestadorServico->IdentificacaoPrestador->InscricaoMunicipal,
+            'FoneEmi' => isset($xml->Nfse->InfNfse->PrestadorServico->Contato->Telefone) ? $xml->Nfse->InfNfse->PrestadorServico->Contato->Telefone : '',
+            'OpSimpleNaciEmi' => $xml->Nfse->InfNfse->OptanteSimplesNacional == 1 ? 'Sim' : 'Não',
+            'IncetCultEmi' => $xml->Nfse->InfNfse->IncentivadorCultural == 1 ? 'Sim' : 'Não',
+            'EnderecoEmi' => $xml->Nfse->InfNfse->PrestadorServico->Endereco->Endereco . ', ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Numero . ' Bairro ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Bairro . ' CEP ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Cep . ' Uberaba - MG',
+            'destrazao' => $xml->Nfse->InfNfse->TomadorServico->RazaoSocial,
+            'destCNPJ' => isset($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->CpfCnpj->Cnpj) ? $this->formatCNPJ($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->CpfCnpj->Cnpj) : $this->formatCPF($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->CpfCnpj->Cpf),
+            'inscMuniDest' => isset($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->InscricaoMunicipal) ? $xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->InscricaoMunicipal : '',
+            'FoneDest' => $xml->Nfse->InfNfse->TomadorServico->Contato->Telefone,
+            'EmailDest' => $xml->Nfse->InfNfse->TomadorServico->Contato->Email,
+            'EnderecoDest' => $xml->Nfse->InfNfse->TomadorServico->Endereco->Endereco . ', ' . $xml->Nfse->InfNfse->TomadorServico->Endereco->Numero . ' Bairro ' . $xml->Nfse->InfNfse->TomadorServico->Endereco->Bairro . ' CEP ' . $xml->Nfse->InfNfse->TomadorServico->Endereco->Cep,
+            'OutrasInformacoes' => $xml->Nfse->InfNfse->OutrasInformacoes,
+            'codTrib' => $xml->Nfse->InfNfse->Servico->CodigoTributacaoMunicipio,
+            'textCodeTrib' => isset($codeTrib[(string)$xml->Nfse->InfNfse->Servico->CodigoTributacaoMunicipio]) ? $codeTrib[(string)$xml->Nfse->InfNfse->Servico->CodigoTributacaoMunicipio] : '',
+            'vPIS' => isset($xml->Nfse->InfNfse->Servico->Valores->ValorPis) ? number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorPis, 2, ',', '.') : '0,00',
+            'vCOFINS' => isset($xml->Nfse->InfNfse->Servico->Valores->ValorCofins) ? number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorCofins, 2, ',', '.') : '0,00',
+            'vINSS' => isset($xml->Nfse->InfNfse->Servico->Valores->ValorInss) ? number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorInss, 2, ',', '.') : '0,00',
+            'vIR' => isset($xml->Nfse->InfNfse->Servico->Valores->ValorIr) ? number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorIr, 2, ',', '.') : '0,00',
+            'vCSLL' => isset($xml->Nfse->InfNfse->Servico->Valores->ValorCsll) ? number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorCsll, 2, ',', '.') : '0,00',
+            'vOthers' => '0,00',
+            'Discriminacao' => $xml->Nfse->InfNfse->Servico->Discriminacao,
+            'valorServ' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorServicos, 2, ',', '.'),
+            'valorDedu' => '0,00',
+            'valorIncod' => '0,00',
+            'valorBasecalc' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->BaseCalculo, 2, ',', '.'),
+            'Aliquota' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->Aliquota * 100), 2, ',', '.'),
+            'valorISS' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorIss, 2, ',', '.'),
+            'valorISSR' => isset($xml->Nfse->InfNfse->Servico->Valores->ValorIssRetido) ? number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorIssRetido, 2, ',', '.') : '0,00',
+            'valorCond' => '0,00',
+            'valorLiquido' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorLiquidoNfse, 2, ',', '.'),
+            'valorTotal' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorLiquidoNfse, 2, ',', '.'),
+        );
+
+        foreach ($replace as $key => $value) {
+
+            $template = str_replace("{{%$key}}", $value, $template);
+        }
+
+        $mpdf = new Mpdf();
+
+        $mpdf->SetDisplayMode(100, 'default');
+
+        $mpdf->allow_charset_conversion = true;
+
+        $mpdf->charset_in = 'iso-8859-4';
+
+        $mpdf->SetMargins(0, 0, 0);
+
+        $mpdf->WriteHTML(utf8_decode($template));
+
+        $mpdf->Output();
     }
 }
