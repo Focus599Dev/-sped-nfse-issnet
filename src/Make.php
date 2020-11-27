@@ -320,7 +320,7 @@ class Make
             $this->Valores,
             "tc:ValorPis",
             $std->ValorPis,
-            true,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
@@ -333,7 +333,7 @@ class Make
             $this->Valores,
             "tc:ValorCofins",
             $std->ValorCofins,
-            true,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
@@ -346,7 +346,7 @@ class Make
             $this->Valores,
             "tc:ValorInss",
             $std->ValorInss,
-            true,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
@@ -359,7 +359,7 @@ class Make
             $this->Valores,
             "tc:ValorIr",
             $std->ValorIr,
-            true,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
@@ -372,7 +372,7 @@ class Make
             $this->Valores,
             "tc:ValorCsll",
             $std->ValorCsll,
-            true,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
@@ -395,7 +395,33 @@ class Make
             $this->Valores,
             "tc:ValorIss",
             $std->ValorIss,
-            true,
+            false,
+            "Valor monetário.
+            Formato: 0.00 (ponto separando casa decimal)
+            Ex:
+            1.234,56 = 1234.56
+            1.000,00 = 1000.00
+            1.000,00 = 1000"
+        );
+
+        $this->dom->addChild(
+            $this->Valores,
+            "tc:ValorIssRetido",
+            $std->ValorIssRetido,
+            false,
+            "Valor monetário.
+            Formato: 0.00 (ponto separando casa decimal)
+            Ex:
+            1.234,56 = 1234.56
+            1.000,00 = 1000.00
+            1.000,00 = 1000"
+        );
+
+        $this->dom->addChild(
+            $this->Valores,
+            "tc:OutrasRetencoes",
+            $std->ValorOutrasRetencoes,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
@@ -408,7 +434,7 @@ class Make
             $this->Valores,
             "tc:BaseCalculo",
             $std->BaseCalculo,
-            true,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
@@ -421,7 +447,7 @@ class Make
             $this->Valores,
             "tc:Aliquota",
             $std->Aliquota,
-            true,
+            false,
             "Alíquota. Valor percentual.
             Formato: 0.0000
             Ex:
@@ -434,7 +460,7 @@ class Make
             $this->Valores,
             "tc:ValorLiquidoNfse",
             $std->ValorLiquidoNfse,
-            true,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
@@ -447,7 +473,7 @@ class Make
             $this->Valores,
             "tc:DescontoIncondicionado",
             $std->DescontoIncondicionado,
-            true,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
@@ -460,7 +486,7 @@ class Make
             $this->Valores,
             "tc:DescontoCondicionado",
             $std->DescontoCondicionado,
-            true,
+            false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
             Ex:
