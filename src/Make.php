@@ -300,7 +300,7 @@ class Make
         );
     }
 
-    public function buildValores($std)
+       public function buildValores($std)
     {
 
         $this->dom->addChild(
@@ -391,31 +391,37 @@ class Make
             2 – Não"
         );
 
-        $this->dom->addChild(
-            $this->Valores,
-            "tc:ValorIss",
-            $std->ValorIss,
-            false,
-            "Valor monetário.
-            Formato: 0.00 (ponto separando casa decimal)
-            Ex:
-            1.234,56 = 1234.56
-            1.000,00 = 1000.00
-            1.000,00 = 1000"
-        );
+        if ($std->IssRetido == 2){
+            
+            $this->dom->addChild(
+                $this->Valores,
+                "tc:ValorIss",
+                $std->ValorIss,
+                false,
+                "Valor monetário.
+                Formato: 0.00 (ponto separando casa decimal)
+                Ex:
+                1.234,56 = 1234.56
+                1.000,00 = 1000.00
+                1.000,00 = 1000"
+            );
+            
+        } else {
 
-        $this->dom->addChild(
-            $this->Valores,
-            "tc:ValorIssRetido",
-            $std->ValorIssRetido,
-            false,
-            "Valor monetário.
-            Formato: 0.00 (ponto separando casa decimal)
-            Ex:
-            1.234,56 = 1234.56
-            1.000,00 = 1000.00
-            1.000,00 = 1000"
-        );
+            $this->dom->addChild(
+                $this->Valores,
+                "tc:ValorIssRetido",
+                $std->ValorIssRetido,
+                false,
+                "Valor monetário.
+                Formato: 0.00 (ponto separando casa decimal)
+                Ex:
+                1.234,56 = 1234.56
+                1.000,00 = 1000.00
+                1.000,00 = 1000"
+            );
+
+        }
 
         $this->dom->addChild(
             $this->Valores,
@@ -446,7 +452,7 @@ class Make
         $this->dom->addChild(
             $this->Valores,
             "tc:Aliquota",
-            $std->Aliquota,
+            $std->Aliquota * 100,
             false,
             "Alíquota. Valor percentual.
             Formato: 0.0000
