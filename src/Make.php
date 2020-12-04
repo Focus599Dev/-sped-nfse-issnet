@@ -396,7 +396,7 @@ class Make
             $this->dom->addChild(
                 $this->Valores,
                 "tc:ValorIss",
-                $std->ValorIss,
+                str_replace('-','',$std->ValorIss),
                 false,
                 "Valor monetário.
                 Formato: 0.00 (ponto separando casa decimal)
@@ -411,7 +411,7 @@ class Make
             $this->dom->addChild(
                 $this->Valores,
                 "tc:ValorIssRetido",
-                $std->ValorIssRetido,
+                str_replace('-','',$std->ValorIssRetido),
                 false,
                 "Valor monetário.
                 Formato: 0.00 (ponto separando casa decimal)
