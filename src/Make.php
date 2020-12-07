@@ -449,18 +449,35 @@ class Make
             1.000,00 = 1000"
         );
 
-        $this->dom->addChild(
-            $this->Valores,
-            "tc:Aliquota",
-            $std->Aliquota * 100,
-            false,
-            "Alíquota. Valor percentual.
-            Formato: 0.0000
-            Ex:
-            1% = 0.01
-            25,5% = 0.255
-            100% = 1.0000 ou 1"
-        );
+        try{
+            $this->dom->addChild(
+                $this->Valores,
+                "tc:Aliquota",
+                $std->Aliquota * 100,
+                false,
+                "Alíquota. Valor percentual.
+                Formato: 0.0000
+                Ex:
+                1% = 0.01
+                25,5% = 0.255
+                100% = 1.0000 ou 1"
+            );
+        } catch(\Exception $e){
+            
+            $this->dom->addChild(
+                $this->Valores,
+                "tc:Aliquota",
+                '',
+                false,
+                "Alíquota. Valor percentual.
+                Formato: 0.0000
+                Ex:
+                1% = 0.01
+                25,5% = 0.255
+                100% = 1.0000 ou 1"
+            );
+
+        }
 
         $this->dom->addChild(
             $this->Valores,
