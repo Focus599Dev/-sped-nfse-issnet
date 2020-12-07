@@ -180,7 +180,7 @@ class Tools extends ToolsBase
 
         if (is_file($logoPath)) {
 
-            $contentlogoPres = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
+            $contentlogoPres = 'data:image/' . pathinfo($logoPath, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($logoPath));
         }
 
         $codeTrib = array(
@@ -194,9 +194,9 @@ class Tools extends ToolsBase
             'dhemi' => (new \DateTime($xml->Nfse->InfNfse->DataEmissao))->format('d/m/Y'),
             'dhEmisec' => (new \DateTime($xml->Nfse->InfNfse->DataEmissao))->format('d/m/Y H:i'),
             'dhcomp' => (new \DateTime($xml->Nfse->InfNfse->DataEmissao))->format('m/Y'),
-            'xMun' => $xml->Nfse->InfNfse->PrestadorServico->Endereco->Uf,
+            'xMun' => $xml->Nfse->InfNfse->PrestadorServico->Endereco->Estado,
             'regimeTrib' => $xml->Nfse->InfNfse->RegimeEspecialTributacao ? 'Nenhum' : 'Esp&eacute;cial',
-            'naturesaop' => $xml->Nfse->InfNfse->NaturezaOperacao == 1 ? 'Trib. no munic&#237;pio de Ribeirão Preto' : 'Trib. forfor&aacute; munic&#237;pio de Ribeirão Preto',
+            'naturesaop' => $xml->Nfse->InfNfse->NaturezaOperacao == 1 ? 'Trib. no munic&#237;pio de Ribeirão Preto' : 'Trib. fora do munic&#237;pio de Ribeirão Preto',
             'nfsserie' => substr($xml->Nfse->InfNfse->Numero, 0, 7),
             'nfsnum' => substr($xml->Nfse->InfNfse->Numero, 7),
             'codveri' => $xml->Nfse->InfNfse->CodigoVerificacao,
