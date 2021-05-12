@@ -1,93 +1,92 @@
 <style>
-
 	@page {
-        margin: 5mm;
-        margin-header: 0mm;
-        margin-footer: 0mm;
-    }
+		margin: 5mm;
+		margin-header: 0mm;
+		margin-footer: 0mm;
+	}
 
-	.border-full{
+	.border-full {
 		border: 1px solid #000;
 	}
 
-	.border-left{
+	.border-left {
 		border-left: 1px solid #000;
 	}
 
-	.border-right{
+	.border-right {
 		border-right: 1px solid #000;
 	}
 
-	.border-top{
+	.border-top {
 		border-top: 1px solid #000;
 	}
 
-	.border-bottom{
+	.border-bottom {
 		border-bottom: 1px solid #000;
 	}
 
-	.border-bottom-strong{
+	.border-bottom-strong {
 		border-bottom: 4px solid #ccc;
 	}
 
-	table{
+	table {
 		border: 0;
 		border-collapse: collapse;
 	}
 
-	body{
+	body {
 		padding: 0px;
 		margin: 0px;
 		font-family: Arial, Helvetica, sans-serif;
 	}
 
-	.style-1{
+	.style-1 {
 		font-size: 15px;
 	}
 
-	.style-2{
+	.style-2 {
 		font-size: 14px;
 	}
 
-	.style-3{
+	.style-3 {
 		font-size: 12px;
 	}
 
-	.style-4{
+	.style-4 {
 		font-size: 18px;
 	}
 
-	.style-5{
+	.style-5 {
 		font-size: 10px;
 	}
 
-	.style-6{
+	.style-6 {
 		font-size: 22px;
 	}
 
-	.height-50{
+	.height-50 {
 		height: 50px;
 	}
 
-	.height-40{
+	.height-40 {
 		height: 40px;
 	}
 
-	.height-30{
+	.height-30 {
 		height: 30px;
 	}
 
-	.height-60{
+	.height-60 {
 		height: 60px;
 	}
 
-	.background-selo{
-		background-image: url('{{%url-selo}}'); 
+	.background-selo {
+		background-image: url('{{%url-selo}}');
 		background-size: cover;
 		background-repeat: no-repeat;
 	}
 
-	.descNFS{
+	.descNFS {
 		min-height: 100px;
 		padding: 15px 0px;
 	}
@@ -108,7 +107,7 @@
 									<table style="width: 100%">
 										<tr>
 											<td class="style-1 height-50">
-												
+
 												<b>
 													Prefeitura Municipal de Ribeirão Preto
 												</b>
@@ -117,7 +116,7 @@
 										</tr>
 										<tr>
 											<td class="style-3">
-											
+
 												<b>
 													Secretaria Municipal de Fazenda
 												</b>
@@ -126,20 +125,21 @@
 										</tr>
 										<tr>
 											<td class="style-3 height-50">
-											
+
 												<b>
 													Central Tributária - ISSQN
 												</b>
-												
+
 											</td>
 										</tr>
 										<tr>
 											<td class="style-3">
-											
+
 												<b>
-													R. Orestes Morandini, 210 - Jardim Castelo Branco - Fone: (16) 3968-6120
+													R. Orestes Morandini, 210 - Jardim Castelo Branco - Fone: (16)
+													3968-6120
 												</b>
-												
+
 											</td>
 										</tr>
 									</table>
@@ -211,7 +211,7 @@
 												</p>
 											</td>
 											<td style="margin-top: 10px">
-												
+
 											</td>
 											<td style="margin-top: 10px">
 												<p class="style-5">
@@ -275,9 +275,9 @@
 			<table>
 				<tr>
 					<td style="width:15%">
-						
-						<img src="{{%logoPres}}" width="148px" alt="logo"/>
-						
+
+						<img src="{{%logoPres}}" width="148px" alt="logo" />
+
 					</td>
 					<td style="width:85%">
 						<table style="width: 100%">
@@ -327,6 +327,11 @@
 													Incentivador Cultural
 												</p>
 											</td>
+											<td align="center">
+												<p class="style-5">
+													E-mail
+												</p>
+											</td>
 										</tr>
 										<tr>
 											<td>
@@ -351,17 +356,22 @@
 													{{%IncetCultEmi}}
 												</p>
 											</td>
+											<td align="center">
+												<p class="style-2">
+													{{%email}}
+												</p>
+											</td>
 										</tr>
 									</table>
 								</td>
-								<td align="center">
+								<!-- <td align="center">
 									<p class="style-5">
 										E-mail
 									</p>
 									<p class="style-2">
 										{{%email}}
 									</p>
-								</td>
+								</td> -->
 							</tr>
 							<tr>
 								<td colspan="2">
@@ -463,7 +473,7 @@
 	<tr>
 		<td colspan="5" class="descNFS border-bottom-strong style-5">
 			<div class="descNFS">
-				C&oacute;digo Tributa&ccedil;&atilde;o Munic&iacute;pio: {{%codTrib}}  {{%textCodeTrib}}
+				C&oacute;digo Tributa&ccedil;&atilde;o Munic&iacute;pio: {{%codTrib}} {{%textCodeTrib}}
 			</div>
 		</td>
 	</tr>

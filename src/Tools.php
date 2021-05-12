@@ -254,6 +254,18 @@ class Tools extends ToolsBase
 
         $mpdf->WriteHTML(utf8_decode($template));
 
-        $mpdf->Output();
+        if (isset($status)) {
+
+            $mpdf->Output();
+        } else {
+
+            $fileName = $this->getPdfFileName($xml);
+    
+            $path = $this->getPdfPath($xml) . $fileName;
+
+            $mpdf->Output($path, 'F');
+
+            return $path;
+        }
     }
 }
