@@ -557,14 +557,27 @@ class Make
 
     public function buildCpfCnpjTomador($std)
     {
+        if (strlen($std->Cnpj) > 11){
+            
+            $this->dom->addChild(
+                $this->CpfCnpjTomador,
+                "tc:Cnpj",
+                $std->Cnpj,
+                true,
+                "Número do Cnpj"
+            );
 
-        $this->dom->addChild(
-            $this->CpfCnpjTomador,
-            "tc:Cnpj",
-            $std->Cnpj,
-            true,
-            "Número do Cnpj"
-        );
+        } else {
+
+            $this->dom->addChild(
+                $this->CpfCnpjTomador,
+                "tc:Cpf",
+                $std->Cnpj,
+                true,
+                "Número do Cpf"
+            );
+
+        }
     }
 
     public function buildEndereco($std)
