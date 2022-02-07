@@ -172,6 +172,43 @@ class Tools extends ToolsBase
         return $response;
     }
 
+    public function get_endereco($cep){
+
+
+        // formatar o cep removendo caracteres nao numericos
+        $cep = preg_replace("/[^0-9]/", "", $cep);
+        $url = "http://viacep.com.br/ws/$cep/xml/";
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $data = curl_exec($ch);
+        curl_close($ch);
+        $xml = simplexml_load_string($data);
+        return $xml;
+    }
+
+    public static function replaceSpecialsChars($string){
+        $string = trim($string);
+        $aFind = ['&','á','à','ã','â','é','ê','í','ó','ô','õ','ú','ü',
+            'ç','Á','À','Ã','Â','É','Ê','Í','Ó','Ô','Õ','Ú','Ü','Ç','nº', '£'];
+        $aSubs = ['&', '&aacute;', '&aacute;', '&atilde;', '&acirc;','&eacute;', '&ecirc;', '&iacute;','&oacute;','&ocirc;','&otilde;', '&uacute;', '&uuml;',
+            '&ccedil;', '&Aacute;', '&Aacute;', '&Atilde;', '&Acirc;', '&Eacute;', '&Ecirc;', '&Iacute;', '&Oacute;', '&Ocirc;', '&Otilde;', '&Uacute;', '&Uuml;', '&Ccedil;', 'n&deg;', ''];
+        $newstr = str_replace($aFind, $aSubs, $string);
+
+        return $newstr;
+    }
+
+    public function getCidade($cep){
+       $response =  $this->get_endereco($cep);
+       try {
+          if($response)
+              return $this->replaceSpecialsChars($response->localidade) . '/' . $response->uf;
+       } catch (Exception $exception) {
+           return  '';
+       }
+    }
+
     public function generatePDFNfse($xml, $tpAmb, $status, $logoPath)
     {
         $template = file_get_contents(realpath(__DIR__ . '/../template') . '/nfse.html');
@@ -189,6 +226,7 @@ class Tools extends ToolsBase
 
         $replace = array(
             'logo' =>  'data:image/png;base64,' . base64_encode(file_get_contents(realpath(__DIR__ . '/../template') . '/brasao.png')),
+            'logoNota' =>  'data:image/jpg;base64,' . base64_encode(file_get_contents(realpath(__DIR__ . '/../template') . '/LogoNotaFiscalEletronica.jpg')),
             'nfenum' => $xml->Nfse->InfNfse->IdentificacaoRps->Numero,
             'serie' => $xml->Nfse->InfNfse->IdentificacaoRps->Serie,
             'dhemi' => (new \DateTime($xml->Nfse->InfNfse->DataEmissao))->format('d/m/Y'),
@@ -208,13 +246,20 @@ class Tools extends ToolsBase
             'FoneEmi' => isset($xml->Nfse->InfNfse->PrestadorServico->Contato->Telefone) ? $xml->Nfse->InfNfse->PrestadorServico->Contato->Telefone : '',
             'OpSimpleNaciEmi' => $xml->Nfse->InfNfse->OptanteSimplesNacional == 1 ? 'Sim' : 'Não',
             'IncetCultEmi' => $xml->Nfse->InfNfse->IncentivadorCultural == 1 ? 'Sim' : 'Não',
-            'EnderecoEmi' => $xml->Nfse->InfNfse->PrestadorServico->Endereco->Endereco . ', ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Numero . ' Bairro ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Bairro . ' CEP ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Cep . ' Ribeirão Preto ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Estado,
+            'EnderecoEmi' => $xml->Nfse->InfNfse->PrestadorServico->Endereco->Endereco . ', ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Numero . ' Bairro ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Bairro ,
+            'EnderecoEmiCep' => $xml->Nfse->InfNfse->PrestadorServico->Endereco->Cep,
+            'EnderecoEmiCidade' => ' Ribeirão Preto ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Estado,
             'destrazao' => $xml->Nfse->InfNfse->TomadorServico->RazaoSocial,
             'destCNPJ' => isset($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->CpfCnpj->Cnpj) ? $this->formatCNPJ($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->CpfCnpj->Cnpj) : $this->formatCPF($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->CpfCnpj->Cpf),
             'inscMuniDest' => isset($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->InscricaoMunicipal) ? $xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->InscricaoMunicipal : '',
             'FoneDest' => $xml->Nfse->InfNfse->TomadorServico->Contato->Telefone,
             'EmailDest' => $xml->Nfse->InfNfse->TomadorServico->Contato->Email,
-            'EnderecoDest' => $xml->Nfse->InfNfse->TomadorServico->Endereco->Endereco . ', ' . $xml->Nfse->InfNfse->TomadorServico->Endereco->Numero . ' Bairro ' . $xml->Nfse->InfNfse->TomadorServico->Endereco->Bairro . ' CEP ' . $xml->Nfse->InfNfse->TomadorServico->Endereco->Cep,
+            'EnderecoDest' => $xml->Nfse->InfNfse->TomadorServico->Endereco->Endereco,
+            'EnderecoDestComplemento'=> $xml->Nfse->InfNfse->TomadorServico->Endereco->Complemento,
+            'EnderecoDestNumero' =>$xml->Nfse->InfNfse->TomadorServico->Endereco->Numero,
+            'EnderecoDestBairro' => $xml->Nfse->InfNfse->TomadorServico->Endereco->Bairro,
+            'EnderecoDestCep'=> $xml->Nfse->InfNfse->TomadorServico->Endereco->Cep,
+            'EnderecoDestCidade'=> $this->getCidade($xml->Nfse->InfNfse->TomadorServico->Endereco->Cep),
             'OutrasInformacoes' => $xml->Nfse->InfNfse->OutrasInformacoes,
             'codTrib' => $xml->Nfse->InfNfse->Servico->CodigoTributacaoMunicipio,
             'textCodeTrib' => isset($codeTrib[(string)$xml->Nfse->InfNfse->Servico->CodigoTributacaoMunicipio]) ? $codeTrib[(string)$xml->Nfse->InfNfse->Servico->CodigoTributacaoMunicipio] : '',
@@ -225,6 +270,7 @@ class Tools extends ToolsBase
             'vCSLL' => isset($xml->Nfse->InfNfse->Servico->Valores->ValorCsll) ? number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorCsll, 2, ',', '.') : '0,00',
             'vOthers' => '0,00',
             'Discriminacao' => $xml->Nfse->InfNfse->Servico->Discriminacao,
+            'IssRetido'=> $xml->Nfse->InfNfse->Servico->Valores->IssRetido == 1 ? 'Sim' : 'Não' ,
             'valorServ' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorServicos, 2, ',', '.'),
             'valorDedu' => '0,00',
             'valorIncod' => '0,00',
@@ -232,9 +278,16 @@ class Tools extends ToolsBase
             'Aliquota' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->Aliquota), 2, ',', '.'),
             'valorISS' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorIss, 2, ',', '.'),
             'valorISSR' => isset($xml->Nfse->InfNfse->Servico->Valores->ValorIssRetido) ? number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorIssRetido, 2, ',', '.') : '0,00',
+            'valorPis' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorPis), 2, ',', '.'),
+            'valorConfins' =>number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorCofins), 2, ',', '.'),
+            'valorInss' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorInss), 2, ',', '.'),
+            'valorIrrf' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorIr), 2, ',', '.'),
+            'valorCsll' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorCsll), 2, ',', '.'),
+            // 'valorIssqn' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorIss), 2, ',', '.'),
             'valorCond' => '0,00',
             'valorLiquido' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorLiquidoNfse, 2, ',', '.'),
             'valorTotal' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorLiquidoNfse, 2, ',', '.'),
+            'OutrosR' => '0,00'
         );
 
         foreach ($replace as $key => $value) {
@@ -254,18 +307,6 @@ class Tools extends ToolsBase
 
         $mpdf->WriteHTML(utf8_decode($template));
 
-        if (isset($status)) {
-
-            $mpdf->Output();
-        } else {
-
-            $fileName = $this->getPdfFileName($xml);
-    
-            $path = $this->getPdfPath($xml) . $fileName;
-
-            $mpdf->Output($path, 'F');
-
-            return $path;
-        }
+        $mpdf->Output();
     }
 }
