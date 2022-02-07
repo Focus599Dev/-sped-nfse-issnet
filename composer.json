@@ -22,6 +22,7 @@
   "require": {
     "php": ">= 7.0",
     "nfephp-org/sped-common": "^5.0",
+    "chillerlan/php-qrcode": "dev-main",
     "justinrainbow/json-schema": "^5.2"
   },
   "require-dev": {

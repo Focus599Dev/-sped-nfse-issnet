@@ -7,6 +7,7 @@ use NFePHP\NFSe\ISSNET\Common\Signer;
 use NFePHP\Common\Strings;
 use NFePHP\NFSe\ISSNET\Make;
 use Mpdf\Mpdf;
+use chillerlan\QRCode\{QRCode, QROptions};
 
 class Tools extends ToolsBase
 {
@@ -224,6 +225,19 @@ class Tools extends ToolsBase
             '1401' => 'Lubrifica&ccedil;&atilde;o, limpeza, lustra&ccedil;&atilde;o, revis&atilde;o, carga e recarga, conserto, restaura&ccedil;&atilde;o, blindagem, manuten&ccedil;&atilde;o e conserva&ccedil;&atilde;o de m&aacute;quinas, ve&iacute;culos, aparelhos, equipamentos, motores, elevadores ou de qualquer objeto (exceto pe&ccedil;as e partes empregadas, que ficam sujeitas ao ICMS)'
         );
 
+        $url = 'https://www.notaeletronica.com.br/ribeiraopreto/NotaDigital/VerificaAutenticidade.aspx';
+        
+        $options = new QROptions([
+            'version'    => 5,
+            'outputType' => QRCode::OUTPUT_MARKUP_SVG,
+            'eccLevel'   => QRCode::ECC_L,
+        ]);
+
+        $qrcode = new QRCode($options);
+        $qrcode->render($url, realpath(__DIR__ . '/../template') . '/qr.svg');
+        
+
+        $img = realpath(__DIR__ . '/../template' ) . '/qr.svg';
         $replace = array(
             'logo' =>  'data:image/png;base64,' . base64_encode(file_get_contents(realpath(__DIR__ . '/../template') . '/brasao.png')),
             'logoNota' =>  'data:image/jpg;base64,' . base64_encode(file_get_contents(realpath(__DIR__ . '/../template') . '/LogoNotaFiscalEletronica.jpg')),
@@ -283,11 +297,13 @@ class Tools extends ToolsBase
             'valorInss' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorInss), 2, ',', '.'),
             'valorIrrf' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorIr), 2, ',', '.'),
             'valorCsll' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorCsll), 2, ',', '.'),
-            // 'valorIssqn' => number_format(((float)$xml->Nfse->InfNfse->Servico->Valores->ValorIss), 2, ',', '.'),
             'valorCond' => '0,00',
             'valorLiquido' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorLiquidoNfse, 2, ',', '.'),
             'valorTotal' => number_format((string)$xml->Nfse->InfNfse->Servico->Valores->ValorLiquidoNfse, 2, ',', '.'),
-            'OutrosR' => '0,00'
+            'OutrosR' => '0,00',
+            'img' => $img,
+            'CodigoCnae' => $xml->Nfse->InfNfse->Servico->CodigoCnae,
+            'ItemListaServico' => $xml->Nfse->InfNfse->Servico->ItemListaServico
         );
 
         foreach ($replace as $key => $value) {
