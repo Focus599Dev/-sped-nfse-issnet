@@ -32,9 +32,9 @@ class Tools
         $this->config = json_decode($configJson);
 
         if ($this->config->tpAmb == '1') {
-            $this->soapUrl = 'prod';
+            $this->soapUrl = 'https://abrasf.issnetonline.com.br/webserviceabrasf/ribeiraopreto/servicos.asmx';
         } else {
-            $this->soapUrl = 'https://issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx';
+            $this->soapUrl = 'https://abrasf.issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx';
             // $this->soapUrl = 'https://www.issnetonline.com.br/webserviceabrasf/ribeiraopreto/servicos.asmx';
         }
 
