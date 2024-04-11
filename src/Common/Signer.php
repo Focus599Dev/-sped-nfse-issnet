@@ -24,6 +24,7 @@ class Signer
         $canonical = [false, false, null, null],
         $rootname = ''
     ) {
+
         if (!empty($canonical)) {
             self::$canonical = $canonical;
         }
@@ -55,8 +56,7 @@ class Signer
             $canonical
         );
         // };
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-            . $dom->saveXML($dom->documentElement, LIBXML_NOBLANKS | LIBXML_NOEMPTYTAG);
+        return $dom->saveXML($dom->documentElement, LIBXML_NOBLANKS | LIBXML_NOEMPTYTAG);
     }
 
     /**

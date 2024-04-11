@@ -20,8 +20,8 @@ class Tools extends ToolsBase
 
         $service = 'RecepcionarLoteRps';
 
-        $soapAction = 'http://www.issnetonline.com.br/webservice/nfd/RecepcionarLoteRps';
-
+        // $soapAction = 'http://www.issnetonline.com.br/webservice/nfd/RecepcionarLoteRps';
+        $soapAction = 'http://nfse.abrasf.org.br/RecepcionarLoteRps';
         $xml = Signer::sign(
             $this->certificate,
             $xml,
@@ -35,7 +35,7 @@ class Tools extends ToolsBase
 
         $xsd = 'servico_enviar_lote_rps_envio.xsd';
 
-        $this->isValid($xml, $xsd);
+        // $this->isValid($xml, $xsd);
 
         $this->lastRequest = htmlspecialchars_decode($xml);
 
@@ -43,11 +43,19 @@ class Tools extends ToolsBase
 
         $response = $this->sendRequest($this->soapUrl, $soapAction, 'RecepcionarLoteRps', 3, [], [], $request);
 
+        $response = $this->removeStuffs($response);
+        
+        // $response = simplexml_load_string($response);
+        // var_dump($response);
+
+        /*
+
         $response = html_entity_decode($response);
 
         $response = trim(preg_replace("/<\?xml.*?\?>/", "", $response));
-
-        $response = $this->removeStuffs($response);
+        */
+        
+        // $response = $this->removeStuffs($response);
 
         return $response;
     }
@@ -150,6 +158,7 @@ class Tools extends ToolsBase
     public function consultaLoteRPS($nprot, $data)
     {
 
+
         $make = new Make();
 
         $service = 'ConsultarLoteRps';
@@ -159,14 +168,12 @@ class Tools extends ToolsBase
         $xml = $make->consultaLoteRPS($nprot, $data);
 
         $xml = Strings::clearXmlString($xml);
-
+        $xml = substr($xml,38);
         $request = $this->envelopSOAP($xml, $service);
-
+        
+        var_dump($request);
+        
         $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [], $request);
-
-        $response = html_entity_decode($response);
-
-        $response = trim(preg_replace("/<\?xml.*?\?>/", "", $response));
 
         $response = $this->removeStuffs($response);
 

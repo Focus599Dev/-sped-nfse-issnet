@@ -22,37 +22,41 @@ class Make
         $this->dom->formatOutput = false;
 
         $this->enviarLoteRpsEnvio = $this->dom->createElement('EnviarLoteRpsEnvio');
-        $this->enviarLoteRpsEnvio->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_enviar_lote_rps_envio.xsd');
         $this->enviarLoteRpsEnvio->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
+        $this->enviarLoteRpsEnvio->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_enviar_lote_rps_envio.xsd');
+        $this->enviarLoteRpsEnvio->setAttribute('xmlns', 'http://www.abrasf.org.br/nfse.xsd');
+
 
         $this->dom->appendChild($this->enviarLoteRpsEnvio);
 
         $this->loteRps = $this->dom->createElement('LoteRps');
         $this->enviarLoteRpsEnvio->appendChild($this->loteRps);
 
-        $this->listaRps = $this->dom->createElement('tc:ListaRps');
+        $this->listaRps = $this->dom->createElement('ListaRps');
 
-        $this->rps = $this->dom->createElement('tc:Rps');
+        $this->rps = $this->dom->createElement('Rps');
 
-        $this->infRps = $this->dom->createElement('tc:InfRps');
+        $this->infRps = $this->dom->createElement('InfDeclaracaoPrestacaoServico');
 
-        $this->identificacaoRps = $this->dom->createElement('tc:IdentificacaoRps');
+        $this->rpssecond = $this->dom->createElement('Rps');
 
-        $this->Servico = $this->dom->createElement('tc:Servico');
+        $this->identificacaoRps = $this->dom->createElement('IdentificacaoRps');
 
-        $this->Valores = $this->dom->createElement('tc:Valores');
+        $this->Servico = $this->dom->createElement('Servico');
 
-        $this->Prestador  = $this->dom->createElement('tc:Prestador');
+        $this->Valores = $this->dom->createElement('Valores');
 
-        $this->CpfCnpjPrestador = $this->dom->createElement('tc:CpfCnpj');
+        $this->Prestador  = $this->dom->createElement('Prestador');
 
-        $this->CpfCnpjTomador = $this->dom->createElement('tc:CpfCnpj');
+        $this->CpfCnpjPrestador = $this->dom->createElement('CpfCnpj');
 
-        $this->Tomador = $this->dom->createElement('tc:Tomador');
+        $this->CpfCnpjTomador = $this->dom->createElement('CpfCnpj');
 
-        $this->IdentificacaoTomador = $this->dom->createElement('tc:IdentificacaoTomador');
+        $this->Tomador = $this->dom->createElement('Tomador');
 
-        $this->Endereco = $this->dom->createElement('tc:Endereco');
+        $this->IdentificacaoTomador = $this->dom->createElement('IdentificacaoTomador');
+
+        $this->Endereco = $this->dom->createElement('Endereco');
     }
 
     public function getXML()
@@ -73,16 +77,27 @@ class Make
         $this->listaRps->appendChild($this->rps);
 
         $this->rps->appendChild($this->infRps);
+ 
+        $this->rpssecond->insertBefore($this->identificacaoRps,$this->rpssecond->firstChild);
+        
+        $this->infRps->insertBefore($this->rpssecond, $this->infRps->firstChild);
 
-        $items = $this->rps->getElementsByTagName('tc:InfRps');
 
-        $firstItem = $items->item(0);
 
-        $firstItem->insertBefore($this->identificacaoRps, $firstItem->firstChild);
+        // $this->dom->appChild($this->rps, $this->infRps , 'Falta tag "InfRps"');
+
+        
+        // $rps->appendChild($this->infRps);
+        //$firstItem = $rps->item(0);
+
+
+        
+        //$firstItem->insertBefore($this->identificacaoRps, $firstItem->firstChild);
+
 
         $this->infRps->appendChild($this->Servico);
 
-        $items = $this->infRps->getElementsByTagName('tc:Servico');
+        $items = $this->infRps->getElementsByTagName('Servico');
 
         $firstItem = $items->item(0);
 
@@ -90,7 +105,7 @@ class Make
 
         $this->infRps->appendChild($this->Prestador);
 
-        $items = $this->infRps->getElementsByTagName('tc:Prestador');
+        $items = $this->infRps->getElementsByTagName('Prestador');
 
         $firstItem = $items->item(0);
 
@@ -98,7 +113,7 @@ class Make
 
         $this->infRps->appendChild($this->Tomador);
 
-        $items = $this->infRps->getElementsByTagName('tc:Tomador');
+        $items = $this->infRps->getElementsByTagName('Tomador');
 
         $firstItem = $items->item(0);
 
@@ -118,35 +133,39 @@ class Make
 
         $this->dom->addChild(
             $this->loteRps,
-            "tc:NumeroLote",
+            "NumeroLote",
             $std->NumeroLote,
             true,
             "Número do Lote de RPS"
         );
 
-        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
-        $this->loteRps->appendChild($cpfCnpj);
+        $prestador = $this->dom->createElement('Prestador');
+        $cpfCnpj = $this->dom->createElement('CpfCnpj');
+        
+        $prestador->appendChild($cpfCnpj);
+        $this->loteRps->appendChild($prestador);
+        
 
         $this->dom->addChild(
             $cpfCnpj,
-            "tc:Cnpj",
-            $std->Cnpj,
+            "Cnpj",
+            trim($std->Cnpj),
             true,
             "Número CNPJ"
         );
 
         $this->dom->addChild(
-            $this->loteRps,
-            "tc:InscricaoMunicipal",
-            $std->InscricaoMunicipal,
+            $prestador,
+            "InscricaoMunicipal",
+            trim($std->InscricaoMunicipal),
             true,
             "Inscrição Municipal"
         );
 
         $this->dom->addChild(
             $this->loteRps,
-            "tc:QuantidadeRps",
-            $std->QuantidadeRps,
+            "QuantidadeRps",
+            trim($std->QuantidadeRps),
             true,
             "Quantidade de RPS do Lote"
         );
@@ -157,24 +176,24 @@ class Make
 
         $this->dom->addChild(
             $this->identificacaoRps,
-            "tc:Numero",
-            $std->Numero,
+            "Numero",
+            trim($std->Numero),
             true,
             "Número do RPS"
         );
 
         $this->dom->addChild(
             $this->identificacaoRps,
-            "tc:Serie",
-            $std->Serie,
+            "Serie",
+            trim($std->Serie),
             true,
             "Número de série do RPS"
         );
 
         $this->dom->addChild(
             $this->identificacaoRps,
-            "tc:Tipo",
-            $std->Tipo,
+            "Tipo",
+            trim($std->Tipo),
             true,
             "Código de tipo de RPS | 1 - RPS | 2 – Nota Fiscal Conjugada (Mista) | 3 – Cupom"
         );
@@ -184,9 +203,9 @@ class Make
     {
 
         $this->dom->addChild(
-            $this->infRps,
-            "tc:DataEmissao",
-            $std->DataEmissao,
+            $this->rpssecond,
+            "DataEmissao",
+            trim($std->DataEmissao),
             true,
             "Formato AAAA-MM-DDTHH:mm:ss 
             onde:
@@ -200,9 +219,9 @@ class Make
         );
 
         $this->dom->addChild(
-            $this->infRps,
-            "tc:NaturezaOperacao",
-            $std->NaturezaOperacao,
+            $this->rpssecond,
+            "NaturezaOperacao",
+            trim($std->NaturezaOperacao),
             true,
             "Código de natureza da operação
             1 – Tributação no município
@@ -214,9 +233,9 @@ class Make
         );
 
         $this->dom->addChild(
-            $this->infRps,
-            "tc:OptanteSimplesNacional",
-            $std->OptanteSimplesNacional,
+            $this->rpssecond,
+            "OptanteSimplesNacional",
+            trim($std->OptanteSimplesNacional),
             true,
             "Identificação de Sim/Não
             1 - Sim
@@ -224,9 +243,9 @@ class Make
         );
 
         $this->dom->addChild(
-            $this->infRps,
-            "tc:IncentivadorCultural",
-            $std->IncentivadorCultural,
+            $this->rpssecond,
+            "IncentivadorCultural",
+            trim($std->IncentivadorCultural),
             true,
             "Identificação de Sim/Não
             1 - Sim
@@ -234,9 +253,9 @@ class Make
         );
 
         $this->dom->addChild(
-            $this->infRps,
-            "tc:Status",
-            $std->Status,
+            $this->rpssecond,
+            "Status",
+            trim($std->Status),
             true,
             "Código de status da NFS-e
             1 – Normal
@@ -245,7 +264,7 @@ class Make
 
         // $this->dom->addChild(
         //     $this->infRps,
-        //     "tc:RegimeEspecialTributacao",
+        //     "RegimeEspecialTributacao",
         //     $std->RegimeEspecialTributacao,
         //     true,
         //     "Código de identificação do regime especial de tributação
@@ -261,40 +280,40 @@ class Make
 
         $this->dom->addChild(
             $this->Servico,
-            "tc:ItemListaServico",
-            $std->ItemListaServico,
+            "ItemListaServico",
+            trim($std->ItemListaServico),
             true,
             "Código de item da lista de serviço"
         );
 
         $this->dom->addChild(
             $this->Servico,
-            "tc:CodigoCnae",
-            $std->CodigoCnae,
+            "CodigoCnae",
+            trim($std->CodigoCnae),
             true,
             "Código CNAE"
         );
 
         $this->dom->addChild(
             $this->Servico,
-            "tc:CodigoTributacaoMunicipio",
-            $std->CodigoTributacaoMunicipio,
+            "CodigoTributacaoMunicipio",
+            trim($std->CodigoTributacaoMunicipio),
             true,
             "Código de Tributação"
         );
 
         $this->dom->addChild(
             $this->Servico,
-            "tc:Discriminacao",
-            $std->Discriminacao,
+            "Discriminacao",
+            trim($std->Discriminacao),
             true,
             "Discriminação do conteúdo da NFS-e"
         );
 
         $this->dom->addChild(
             $this->Servico,
-            "tc:MunicipioPrestacaoServico",
-            $std->CodigoMunicipio,
+            "MunicipioPrestacaoServico",
+            trim($std->CodigoMunicipio),
             true,
             "Código de identificação do município conforme tabela do IBGE"
         );
@@ -305,8 +324,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:ValorServicos",
-            $std->ValorServicos,
+            "ValorServicos",
+            trim($std->ValorServicos),
             true,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -318,8 +337,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:ValorPis",
-            $std->ValorPis,
+            "ValorPis",
+            trim($std->ValorPis),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -331,8 +350,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:ValorCofins",
-            $std->ValorCofins,
+            "ValorCofins",
+            trim($std->ValorCofins),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -344,8 +363,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:ValorInss",
-            $std->ValorInss,
+            "ValorInss",
+            trim($std->ValorInss),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -357,8 +376,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:ValorIr",
-            $std->ValorIr,
+            "ValorIr",
+            trim($std->ValorIr),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -370,8 +389,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:ValorCsll",
-            $std->ValorCsll,
+            "ValorCsll",
+            trim($std->ValorCsll),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -383,8 +402,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:IssRetido",
-            $std->IssRetido,
+            "IssRetido",
+            trim($std->IssRetido),
             true,
             "dentificação de Sim/Não
             1 - Sim
@@ -395,8 +414,8 @@ class Make
             
             $this->dom->addChild(
                 $this->Valores,
-                "tc:ValorIss",
-                str_replace('-','',$std->ValorIss),
+                "ValorIss",
+                trim(str_replace('-','',$std->ValorIss)),
                 false,
                 "Valor monetário.
                 Formato: 0.00 (ponto separando casa decimal)
@@ -410,8 +429,8 @@ class Make
 
             $this->dom->addChild(
                 $this->Valores,
-                "tc:ValorIssRetido",
-                str_replace('-','',$std->ValorIssRetido),
+                "ValorIssRetido",
+                trim(str_replace('-','',$std->ValorIssRetido)),
                 false,
                 "Valor monetário.
                 Formato: 0.00 (ponto separando casa decimal)
@@ -425,8 +444,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:OutrasRetencoes",
-            $std->ValorOutrasRetencoes,
+            "OutrasRetencoes",
+            trim($std->ValorOutrasRetencoes),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -438,8 +457,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:BaseCalculo",
-            $std->BaseCalculo,
+            "BaseCalculo",
+            trim($std->BaseCalculo),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -452,8 +471,8 @@ class Make
         try{
             $this->dom->addChild(
                 $this->Valores,
-                "tc:Aliquota",
-                $std->Aliquota * 100,
+                "Aliquota",
+                trim($std->Aliquota * 100),
                 false,
                 "Alíquota. Valor percentual.
                 Formato: 0.0000
@@ -466,7 +485,7 @@ class Make
             
             $this->dom->addChild(
                 $this->Valores,
-                "tc:Aliquota",
+                "Aliquota",
                 '',
                 false,
                 "Alíquota. Valor percentual.
@@ -481,8 +500,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:ValorLiquidoNfse",
-            $std->ValorLiquidoNfse,
+            "ValorLiquidoNfse",
+            trim($std->ValorLiquidoNfse),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -494,8 +513,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:DescontoIncondicionado",
-            $std->DescontoIncondicionado,
+            "DescontoIncondicionado",
+            trim($std->DescontoIncondicionado),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -507,8 +526,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "tc:DescontoCondicionado",
-            $std->DescontoCondicionado,
+            "DescontoCondicionado",
+            trim($std->DescontoCondicionado),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -524,8 +543,8 @@ class Make
 
         $this->dom->addChild(
             $this->Prestador,
-            "tc:InscricaoMunicipal",
-            $std->InscricaoMunicipal,
+            "InscricaoMunicipal",
+            trim($std->InscricaoMunicipal),
             true,
             "Inscrição Municipal da empresa/pessoa"
         );
@@ -536,8 +555,8 @@ class Make
 
         $this->dom->addChild(
             $this->Tomador,
-            "tc:RazaoSocial",
-            $std->RazaoSocial,
+            "RazaoSocial",
+            trim($std->RazaoSocial),
             true,
             "Razão social"
         );
@@ -548,8 +567,8 @@ class Make
 
         $this->dom->addChild(
             $this->CpfCnpjPrestador,
-            "tc:Cnpj",
-            $std->Cnpj,
+            "Cnpj",
+            trim($std->Cnpj),
             true,
             "Número do Cnpj"
         );
@@ -561,8 +580,8 @@ class Make
             
             $this->dom->addChild(
                 $this->CpfCnpjTomador,
-                "tc:Cnpj",
-                $std->Cnpj,
+                "Cnpj",
+                trim($std->Cnpj),
                 true,
                 "Número do Cnpj"
             );
@@ -571,8 +590,8 @@ class Make
 
             $this->dom->addChild(
                 $this->CpfCnpjTomador,
-                "tc:Cpf",
-                $std->Cnpj,
+                "Cpf",
+                trim($std->Cnpj),
                 true,
                 "Número do Cpf"
             );
@@ -585,56 +604,56 @@ class Make
 
         $this->dom->addChild(
             $this->Endereco,
-            "tc:Endereco",
-            $std->Endereco,
+            "Endereco",
+            trim($std->Endereco),
             true,
             "Tipo e nome do logradouro"
         );
 
         $this->dom->addChild(
             $this->Endereco,
-            "tc:Numero",
-            $std->Numero,
+            "Numero",
+            trim($std->Numero),
             true,
             "Número do imóvel"
         );
 
         $this->dom->addChild(
             $this->Endereco,
-            "tc:Complemento",
-            $std->Complemento,
+            "Complemento",
+            trim($std->Complemento),
             true,
             "Complemento do Endereço"
         );
 
         $this->dom->addChild(
             $this->Endereco,
-            "tc:Bairro",
-            $std->Bairro,
+            "Bairro",
+            trim($std->Bairro),
             true,
             "Nome do bairro"
         );
 
         $this->dom->addChild(
             $this->Endereco,
-            "tc:Cidade",
-            $std->CodigoMunicipio,
+            "Cidade",
+            trim($std->CodigoMunicipio),
             true,
             "Código da cidade"
         );
 
         $this->dom->addChild(
             $this->Endereco,
-            "tc:Estado",
-            $std->Uf,
+            "Estado",
+            trim($std->Uf),
             true,
             "Sigla do estado"
         );
 
         $this->dom->addChild(
             $this->Endereco,
-            "tc:Cep",
-            $std->Cep,
+            "Cep",
+            trim($std->Cep),
             true,
             "CEP da localidade"
         );
@@ -661,13 +680,13 @@ class Make
 
         $pedido = $this->dom->createElement('Pedido');
 
-        $infPedidoCancelamento = $this->dom->createElement('tc:InfPedidoCancelamento');
+        $infPedidoCancelamento = $this->dom->createElement('InfPedidoCancelamento');
 
-        $identificacaoNfse = $this->dom->createElement('tc:IdentificacaoNfse');
+        $identificacaoNfse = $this->dom->createElement('IdentificacaoNfse');
 
         $this->dom->addChild(
             $identificacaoNfse,
-            "tc:Numero",
+            "Numero",
             $std->Numero,
             true,
             "Número da Nota Fiscal de Serviço Eletrônica, formado pelo ano com 04 (quatro) dígitos e um número seqüencial com 11 posições – 
@@ -676,7 +695,7 @@ class Make
 
         $this->dom->addChild(
             $identificacaoNfse,
-            "tc:Cnpj",
+            "Cnpj",
             $std->cnpj,
             true,
             "Número CNPJ"
@@ -684,7 +703,7 @@ class Make
 
         $this->dom->addChild(
             $identificacaoNfse,
-            "tc:InscricaoMunicipal",
+            "InscricaoMunicipal",
             $std->InscricaoMunicipal,
             true,
             "Inscrição Municipal"
@@ -692,7 +711,7 @@ class Make
 
         $this->dom->addChild(
             $identificacaoNfse,
-            "tc:CodigoMunicipio",
+            "CodigoMunicipio",
             $std->CodigoMunicipio,
             true,
             "Código de identificação do município conforme tabela do IBGE"
@@ -702,7 +721,7 @@ class Make
 
         $this->dom->addChild(
             $infPedidoCancelamento,
-            "tc:CodigoCancelamento",
+            "CodigoCancelamento",
             $std->CodigoCancelamento,
             true,
             "Código de cancelamento com base na tabela de Erros e alertas."
@@ -735,11 +754,11 @@ class Make
 
         $prestador = $this->dom->createElement('Prestador');
 
-        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        $cpfCnpj = $this->dom->createElement('CpfCnpj');
         
         $this->dom->addChild(
             $cpfCnpj,
-            "tc:Cnpj",
+            "Cnpj",
             $std->cnpj,
             true,
             "Número CNPJ"
@@ -749,7 +768,7 @@ class Make
 
         $this->dom->addChild(
             $prestador,
-            "tc:InscricaoMunicipal",
+            "InscricaoMunicipal",
             $std->inscricaoMunicipal,
             true,
             "Inscrição Municipal"
@@ -791,7 +810,7 @@ class Make
 
         $this->dom->addChild(
             $identificacaoRps,
-            "tc:Numero",
+            "Numero",
             $std->Numero,
             true,
             "Número RPS"
@@ -799,7 +818,7 @@ class Make
 
         $this->dom->addChild(
             $identificacaoRps,
-            "tc:Serie",
+            "Serie",
             $std->Serie,
             true,
             "Serie RPS"
@@ -807,7 +826,7 @@ class Make
 
         $this->dom->addChild(
             $identificacaoRps,
-            "tc:Tipo",
+            "Tipo",
             $std->Tipo,
             true,
             "Tipo RPS"
@@ -817,11 +836,11 @@ class Make
         
         $prestador = $this->dom->createElement('Prestador');
 
-        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        $cpfCnpj = $this->dom->createElement('CpfCnpj');
 
         $this->dom->addChild(
             $cpfCnpj,
-            "tc:Cnpj",
+            "Cnpj",
             $prest->cnpj,
             true,
             "Número CNPJ"
@@ -829,7 +848,7 @@ class Make
 
         $this->dom->addChild(
             $prestador,
-            "tc:InscricaoMunicipal",
+            "InscricaoMunicipal",
             $prest->inscricaoMunicipal,
             true,
             "Inscrição Municipal"
@@ -862,25 +881,25 @@ class Make
 
         $prestador = $this->dom->createElement('Prestador');
 
-        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        $cpfCnpj = $this->dom->createElement('CpfCnpj');
 
         $this->dom->addChild(
             $cpfCnpj,
-            "tc:Cnpj",
+            "Cnpj",
             $data->cnpj,
             true,
             "Número CNPJ"
         );
+        $prestador->appendChild($cpfCnpj);
 
         $this->dom->addChild(
             $prestador,
-            "tc:InscricaoMunicipal",
+            "InscricaoMunicipal",
             $data->inscricaoMunicipal,
             true,
             "Inscrição Municipal"
         );
         
-        $prestador->appendChild($cpfCnpj);
 
         $req->appendChild($prestador);
 
@@ -910,12 +929,12 @@ class Make
         $prestador = $this->dom->createElement('Prestador');
         $req->appendChild($prestador);
 
-        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        $cpfCnpj = $this->dom->createElement('CpfCnpj');
         $prestador->appendChild($cpfCnpj);
 
         $this->dom->addChild(
             $cpfCnpj,
-            "tc:Cnpj",
+            "Cnpj",
             $std->Cnpj,
             true,
             "Número CNPJ"
@@ -923,7 +942,7 @@ class Make
 
         $this->dom->addChild(
             $prestador,
-            "tc:InscricaoMunicipal",
+            "InscricaoMunicipal",
             $std->inscricaoMunicipal,
             true,
             "Inscrição Municipal"
@@ -959,12 +978,12 @@ class Make
         $tomador = $this->dom->createElement('Tomador');
         $req->appendChild($tomador);
 
-        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        $cpfCnpj = $this->dom->createElement('CpfCnpj');
         $tomador->appendChild($cpfCnpj);
 
         $this->dom->addChild(
             $cpfCnpj,
-            "tc:Cnpj",
+            "Cnpj",
             $std->Cnpj,
             true,
             "Número CNPJ"
@@ -972,7 +991,7 @@ class Make
 
         $this->dom->addChild(
             $tomador,
-            "tc:InscricaoMunicipal",
+            "InscricaoMunicipal",
             $std->inscricaoMunicipal,
             true,
             "Inscrição Municipal"
@@ -981,12 +1000,12 @@ class Make
         $intermediarioServico = $this->dom->createElement('IntermediarioServico');
         $req->appendChild($intermediarioServico);
 
-        $cpfCnpj = $this->dom->createElement('tc:CpfCnpj');
+        $cpfCnpj = $this->dom->createElement('CpfCnpj');
         $intermediarioServico->appendChild($cpfCnpj);
 
         $this->dom->addChild(
             $cpfCnpj,
-            "tc:Cnpj",
+            "Cnpj",
             $std->Cnpj,
             true,
             "Número CNPJ"
@@ -994,7 +1013,7 @@ class Make
 
         $this->dom->addChild(
             $intermediarioServico,
-            "tc:RazaoSocial",
+            "RazaoSocial",
             $std->RazaoSocial,
             true,
             "Razão Social"
@@ -1002,7 +1021,7 @@ class Make
 
         $this->dom->addChild(
             $intermediarioServico,
-            "tc:InscricaoMunicipal",
+            "InscricaoMunicipal",
             $std->inscricaoMunicipal,
             true,
             "Inscrição Municipal"

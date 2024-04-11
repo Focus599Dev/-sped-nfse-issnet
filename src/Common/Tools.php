@@ -32,9 +32,11 @@ class Tools
         $this->config = json_decode($configJson);
 
         if ($this->config->tpAmb == '1') {
-            $this->soapUrl = 'https://abrasf.issnetonline.com.br/webserviceabrasf/ribeiraopreto/servicos.asmx';
+            $this->soapUrl = 'prod';
         } else {
-            $this->soapUrl = 'https://abrasf.issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx';
+
+            //$this->soapUrl =  'https://abrasf.issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx';
+            $this->soapUrl = 'https://nfse.issnetonline.com.br/abrasf204/ribeiraopreto/nfse.asmx';
             // $this->soapUrl = 'https://www.issnetonline.com.br/webserviceabrasf/ribeiraopreto/servicos.asmx';
         }
 
@@ -55,26 +57,38 @@ class Tools
     public function envelopSOAP($xml, $service)
     {
         $this->xml = '<?xml version="1.0" encoding="utf-8"?>
-        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:nfse="http://nfse.abrasf.org.br">
+               <soap:Header/>
                 <soap:Body>
-                    <tns:' . $service . ' xmlns:tns="http://www.issnetonline.com.br/webservice/nfd">
-                        <tns:xml>' . htmlspecialchars($xml) . '</tns:xml>
-                    </tns:' . $service . '>
+                    <nfse:' . $service . '>
+                    <nfseCabecMsg>
+                        <cabecalho versao="2.04" xmlns="http://www.abrasf.org.br/nfse.xsd">
+	                        <versaoDados>2.04</versaoDados>
+                        </cabecalho>
+                    </nfseCabecMsg>
+                    <nfseDadosMsg>'.
+                    $xml
+                    .' 
+                    </nfseDadosMsg>
+
+                       
+                    </nfse:' . $service . '>
                 </soap:Body>
             </soap:Envelope>';
 
+            //  var_dump($this->xml);
         return $this->xml;
     }
 
     public function removeStuffs($xml)
     {
 
-        if (preg_match('/<soap:Body>/', $xml)) {
+        if (preg_match('/<s:Body>/', $xml)) {
 
-            $tag = '<soap:Body>';
+            $tag = '<s:Body>';
             $xml = substr($xml, (strpos($xml, $tag) + strlen($tag)), strlen($xml));
 
-            $tag = '</soap:Body>';
+            $tag = '</s:Body>';
             $xml = substr($xml, 0, strpos($xml, $tag));
         }
 
@@ -93,6 +107,7 @@ class Tools
         $pathschemes = realpath(__DIR__ . '/../../schemas/') . '/';
 
         $schema = $pathschemes . $method;
+
 
         if (!is_file($schema)) {
             return true;
