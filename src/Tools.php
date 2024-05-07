@@ -20,8 +20,17 @@ class Tools extends ToolsBase
 
         $service = 'RecepcionarLoteRps';
 
-        // $soapAction = 'http://www.issnetonline.com.br/webservice/nfd/RecepcionarLoteRps';
         $soapAction = 'http://nfse.abrasf.org.br/RecepcionarLoteRps';
+        
+        $xml = Signer::sign(
+            $this->certificate,
+            $xml,
+            'Rps',
+            '',
+            $this->algorithm,
+            $this->canonical
+        );
+
         $xml = Signer::sign(
             $this->certificate,
             $xml,
@@ -31,11 +40,11 @@ class Tools extends ToolsBase
             $this->canonical
         );
 
-        $xml = Strings::clearXmlString($xml);
+        $xml = Strings::clearXmlString($xml, true);
 
         $xsd = 'servico_enviar_lote_rps_envio.xsd';
 
-        // $this->isValid($xml, $xsd);
+        $this->isValid($xml, $xsd);
 
         $this->lastRequest = htmlspecialchars_decode($xml);
 
@@ -44,18 +53,6 @@ class Tools extends ToolsBase
         $response = $this->sendRequest($this->soapUrl, $soapAction, 'RecepcionarLoteRps', 3, [], [], $request);
 
         $response = $this->removeStuffs($response);
-        
-        // $response = simplexml_load_string($response);
-        // var_dump($response);
-
-        /*
-
-        $response = html_entity_decode($response);
-
-        $response = trim(preg_replace("/<\?xml.*?\?>/", "", $response));
-        */
-        
-        // $response = $this->removeStuffs($response);
 
         return $response;
     }
@@ -67,7 +64,7 @@ class Tools extends ToolsBase
 
         $service = 'CancelarNfse';
 
-        $soapAction = "http://www.issnetonline.com.br/webservice/nfd/CancelarNfse";
+        $soapAction = 'http://nfse.abrasf.org.br/CancelarNfse';
 
         $xml = $make->cancelamento($std);
 
@@ -87,10 +84,6 @@ class Tools extends ToolsBase
         $request = $this->envelopSOAP($xml, $service);
 
         $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [], $request);
-
-        $response = html_entity_decode($response);
-
-        $response = trim(preg_replace("/<\?xml.*?\?>/", "", $response));
 
         $response = $this->removeStuffs($response);
 
@@ -130,9 +123,9 @@ class Tools extends ToolsBase
 
         $make = new Make();
 
-        $service = 'ConsultaNFSePorRPS';
+        $service = 'ConsultarNfsePorRps';
 
-        $soapAction = "http://www.issnetonline.com.br/webservice/nfd/ConsultaNFSePorRPS";
+        $soapAction = 'http://nfse.abrasf.org.br/ConsultarNfsePorRps';
 
         $xml = $make->consultaNFSePorRPS($indenRPS, $data);
 
@@ -140,15 +133,11 @@ class Tools extends ToolsBase
 
         $this->isValid($xml, $xsd);
 
-        $xml = Strings::clearXmlString($xml);
+        $xml = Strings::clearXmlString($xml, true);
 
         $request = $this->envelopSOAP($xml, $service);
 
         $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [], $request);
-
-        $response = html_entity_decode($response);
-
-        $response = trim(preg_replace("/<\?xml.*?\?>/", "", $response));
 
         $response = $this->removeStuffs($response);
 
@@ -158,22 +147,25 @@ class Tools extends ToolsBase
     public function consultaLoteRPS($nprot, $data)
     {
 
-
         $make = new Make();
 
         $service = 'ConsultarLoteRps';
 
-        $soapAction = "http://www.issnetonline.com.br/webservice/nfd/ConsultarLoteRps";
+        $soapAction = 'http://nfse.abrasf.org.br/ConsultarLoteRps';
 
         $xml = $make->consultaLoteRPS($nprot, $data);
 
-        $xml = Strings::clearXmlString($xml);
-        $xml = substr($xml,38);
+        $xml = Strings::clearXmlString($xml, true);
+
+        $xsd = 'servico_consultar_lote_rps_envio.xsd';
+
+        $this->isValid($xml, $xsd);
+
+        $this->lastRequest = htmlspecialchars_decode($xml);
+
         $request = $this->envelopSOAP($xml, $service);
-        
-        var_dump($request);
-        
-        $response = $this->sendRequest($this->soapUrl, $soapAction, $service, 3, [], [], $request);
+
+        $response = $this->sendRequest($this->soapUrl, $soapAction, 'RecepcionarLoteRps', 3, [], [], $request);
 
         $response = $this->removeStuffs($response);
 

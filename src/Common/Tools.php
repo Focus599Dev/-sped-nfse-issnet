@@ -32,12 +32,14 @@ class Tools
         $this->config = json_decode($configJson);
 
         if ($this->config->tpAmb == '1') {
-            $this->soapUrl = 'prod';
+
+            $this->soapUrl = 'https://nfse.issnetonline.com.br/abrasf204/ribeiraopreto/nfse.asmx';
+
         } else {
 
             //$this->soapUrl =  'https://abrasf.issnetonline.com.br/webserviceabrasf/homologacao/servicos.asmx';
-            $this->soapUrl = 'https://nfse.issnetonline.com.br/abrasf204/ribeiraopreto/nfse.asmx';
-            // $this->soapUrl = 'https://www.issnetonline.com.br/webserviceabrasf/ribeiraopreto/servicos.asmx';
+            // $this->soapUrl = 'https://nfse.issnetonline.com.br/abrasf204/ribeiraopreto/nfse.asmx';
+            $this->soapUrl = 'https://www.issnetonline.com.br/homologaabrasf/webservicenfse204/nfse.asmx';
         }
 
         $this->soap = new Soap($this->certificate);
@@ -66,17 +68,11 @@ class Tools
 	                        <versaoDados>2.04</versaoDados>
                         </cabecalho>
                     </nfseCabecMsg>
-                    <nfseDadosMsg>'.
-                    $xml
-                    .' 
-                    </nfseDadosMsg>
-
-                       
+                    <nfseDadosMsg>'.$xml.'</nfseDadosMsg>
                     </nfse:' . $service . '>
                 </soap:Body>
             </soap:Envelope>';
 
-            //  var_dump($this->xml);
         return $this->xml;
     }
 

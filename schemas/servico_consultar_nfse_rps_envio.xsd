@@ -1,13 +1,21 @@
 <?xml version="1.0"?>
-<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns:tc="http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd" targetNamespace="http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_nfse_rps_envio.xsd"
-            xmlns="http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_nfse_rps_envio.xsd" attributeFormDefault="unqualified" elementFormDefault="qualified">
-  <xsd:import schemaLocation="tipos_complexos.xsd" namespace="http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd"/>
-  <xsd:element name="ConsultarNfseRpsEnvio">
-    <xsd:complexType>
-      <xsd:all>
-        <xsd:element name="IdentificacaoRps" type="tc:tcIdentificacaoRps" minOccurs="1" maxOccurs="1"/>
-        <xsd:element name="Prestador" type="tc:tcIdentificacaoPrestador" minOccurs="1" maxOccurs="1"/>
-      </xsd:all>
-    </xsd:complexType>
-  </xsd:element>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.abrasf.org.br/nfse.xsd" xmlns="http://www.abrasf.org.br/nfse.xsd"
+	xmlns:dsig="http://www.w3.org/2000/09/xmldsig#" 
+	attributeFormDefault="unqualified"
+	elementFormDefault="qualified">
+	<xsd:include schemaLocation="tipos_complexos.xsd"/>
+	<xsd:import namespace="http://www.w3.org/2000/09/xmldsig#"
+		schemaLocation="xmldsig-core-schema20020212.xsd" />
+	<xsd:element name="ConsultarNfseRpsEnvio">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="IdentificacaoRps" type="tcIdentificacaoRps"
+					minOccurs="1" maxOccurs="1" />
+				<xsd:element name="Prestador" type="tcIdentificacaoPessoaEmpresa"
+					minOccurs="1" maxOccurs="1" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
 </xsd:schema>

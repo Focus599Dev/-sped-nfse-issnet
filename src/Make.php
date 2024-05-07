@@ -22,14 +22,15 @@ class Make
         $this->dom->formatOutput = false;
 
         $this->enviarLoteRpsEnvio = $this->dom->createElement('EnviarLoteRpsEnvio');
-        $this->enviarLoteRpsEnvio->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
-        $this->enviarLoteRpsEnvio->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_enviar_lote_rps_envio.xsd');
-        $this->enviarLoteRpsEnvio->setAttribute('xmlns', 'http://www.abrasf.org.br/nfse.xsd');
 
+        $this->enviarLoteRpsEnvio->setAttribute('xmlns', 'http://www.abrasf.org.br/nfse.xsd');
 
         $this->dom->appendChild($this->enviarLoteRpsEnvio);
 
         $this->loteRps = $this->dom->createElement('LoteRps');
+        
+        $this->loteRps->setAttribute('versao', '2.04');
+
         $this->enviarLoteRpsEnvio->appendChild($this->loteRps);
 
         $this->listaRps = $this->dom->createElement('ListaRps');
@@ -44,6 +45,8 @@ class Make
 
         $this->Servico = $this->dom->createElement('Servico');
 
+        $this->Competencia = $this->dom->createElement('Competencia');
+
         $this->Valores = $this->dom->createElement('Valores');
 
         $this->Prestador  = $this->dom->createElement('Prestador');
@@ -52,11 +55,20 @@ class Make
 
         $this->CpfCnpjTomador = $this->dom->createElement('CpfCnpj');
 
-        $this->Tomador = $this->dom->createElement('Tomador');
+        $this->Tomador = $this->dom->createElement('TomadorServico');
 
         $this->IdentificacaoTomador = $this->dom->createElement('IdentificacaoTomador');
 
         $this->Endereco = $this->dom->createElement('Endereco');
+        
+        $this->RegimeEspecialTributacao = $this->dom->createElement('RegimeEspecialTributacao');
+        
+        $this->OptanteSimplesNacional = $this->dom->createElement('OptanteSimplesNacional');
+        
+        $this->IncentivoFiscal = $this->dom->createElement('IncentivoFiscal');
+        
+        $this->InformacoesComplementares = $this->dom->createElement('InformacoesComplementares');
+        
     }
 
     public function getXML()
@@ -82,18 +94,14 @@ class Make
         
         $this->infRps->insertBefore($this->rpssecond, $this->infRps->firstChild);
 
-
-
         // $this->dom->appChild($this->rps, $this->infRps , 'Falta tag "InfRps"');
 
-        
         // $rps->appendChild($this->infRps);
         //$firstItem = $rps->item(0);
 
-
-        
         //$firstItem->insertBefore($this->identificacaoRps, $firstItem->firstChild);
 
+        $this->infRps->appendChild($this->Competencia);
 
         $this->infRps->appendChild($this->Servico);
 
@@ -113,7 +121,7 @@ class Make
 
         $this->infRps->appendChild($this->Tomador);
 
-        $items = $this->infRps->getElementsByTagName('Tomador');
+        $items = $this->infRps->getElementsByTagName('TomadorServico');
 
         $firstItem = $items->item(0);
 
@@ -122,6 +130,30 @@ class Make
         $this->IdentificacaoTomador->appendChild($this->CpfCnpjTomador);
 
         $this->Tomador->appendChild($this->Endereco);
+
+        if ($this->RegimeEspecialTributacao->nodeValue != ''){
+
+             $this->infRps->appendChild($this->RegimeEspecialTributacao);
+
+        }
+
+        if ($this->OptanteSimplesNacional->nodeValue != ''){
+
+             $this->infRps->appendChild($this->OptanteSimplesNacional);
+
+        }
+
+        if ($this->IncentivoFiscal->nodeValue != ''){
+
+            $this->infRps->appendChild($this->IncentivoFiscal);
+
+       }
+
+        if ($this->InformacoesComplementares->nodeValue != ''){
+
+             $this->infRps->appendChild($this->InformacoesComplementares);
+
+        }
 
         $this->xml = $this->dom->saveXML();
 
@@ -169,6 +201,8 @@ class Make
             true,
             "Quantidade de RPS do Lote"
         );
+
+        $this->Competencia->nodeValue = $std->Competencia;
     }
 
     public function buildIdentificacaoRps($std)
@@ -218,39 +252,39 @@ class Make
             ss: segundo com 2 caracteres"
         );
 
-        $this->dom->addChild(
-            $this->rpssecond,
-            "NaturezaOperacao",
-            trim($std->NaturezaOperacao),
-            true,
-            "Código de natureza da operação
-            1 – Tributação no município
-            2 - Tributação fora do município
-            3 - Isenção
-            4 - Imune
-            5 –Exigibilidade suspensa por decisão judicial
-            6 – Exigibilidade suspensa por procedimento administrativo"
-        );
+        // $this->dom->addChild(
+        //     $this->rpssecond,
+        //     "NaturezaOperacao",
+        //     trim($std->NaturezaOperacao),
+        //     true,
+        //     "Código de natureza da operação
+        //     1 – Tributação no município
+        //     2 - Tributação fora do município
+        //     3 - Isenção
+        //     4 - Imune
+        //     5 –Exigibilidade suspensa por decisão judicial
+        //     6 – Exigibilidade suspensa por procedimento administrativo"
+        // );
 
-        $this->dom->addChild(
-            $this->rpssecond,
-            "OptanteSimplesNacional",
-            trim($std->OptanteSimplesNacional),
-            true,
-            "Identificação de Sim/Não
-            1 - Sim
-            2 – Não"
-        );
+        // $this->dom->addChild(
+        //     $this->rpssecond,
+        //     "OptanteSimplesNacional",
+        //     trim($std->OptanteSimplesNacional),
+        //     true,
+        //     "Identificação de Sim/Não
+        //     1 - Sim
+        //     2 – Não"
+        // );
 
-        $this->dom->addChild(
-            $this->rpssecond,
-            "IncentivadorCultural",
-            trim($std->IncentivadorCultural),
-            true,
-            "Identificação de Sim/Não
-            1 - Sim
-            2 – Não"
-        );
+        // $this->dom->addChild(
+        //     $this->rpssecond,
+        //     "IncentivadorCultural",
+        //     trim($std->IncentivadorCultural),
+        //     true,
+        //     "Identificação de Sim/Não
+        //     1 - Sim
+        //     2 – Não"
+        // );
 
         $this->dom->addChild(
             $this->rpssecond,
@@ -273,10 +307,51 @@ class Make
         //     3 – Sociedade de profissionais
         //     4 – Cooperativa"
         // );
+
+        if ($std->RegimeEspecialTributacao != ''){
+
+            $this->RegimeEspecialTributacao->nodeValue = $std->RegimeEspecialTributacao;
+        }
+
+        if ($std->OptanteSimplesNacional != ''){
+
+            $this->OptanteSimplesNacional->nodeValue = $std->OptanteSimplesNacional;
+        }
+
+        if ($std->InformacoesComplementares != ''){
+
+            $this->InformacoesComplementares->nodeValue = $std->InformacoesComplementares;
+        }
+
+        if ($std->IncentivoFiscal != ''){
+
+            $this->IncentivoFiscal->nodeValue = $std->IncentivoFiscal;
+        }
+        
     }
 
     public function buildServico($std)
     {
+
+        $this->dom->addChild(
+            $this->Servico,
+            "IssRetido",
+            trim($std->IssRetido),
+            true,
+            "dentificação de Sim/Não
+            1 - Sim
+            2 – Não"
+        );
+
+        $this->dom->addChild(
+            $this->Servico,
+            "ResponsavelRetencao",
+            trim($std->ResponsavelRetencao),
+            false,
+            "Responsavel pela retencao do ISSQN (
+                1 - Tomador; 
+                2 - Intermediario)"
+        );
 
         $this->dom->addChild(
             $this->Servico,
@@ -304,6 +379,14 @@ class Make
 
         $this->dom->addChild(
             $this->Servico,
+            "CodigoNbs",
+            trim($std->CodigoNbs),
+            false,
+            "Código de Tributação"
+        );
+
+        $this->dom->addChild(
+            $this->Servico,
             "Discriminacao",
             trim($std->Discriminacao),
             true,
@@ -312,10 +395,50 @@ class Make
 
         $this->dom->addChild(
             $this->Servico,
-            "MunicipioPrestacaoServico",
+            "CodigoMunicipio",
             trim($std->CodigoMunicipio),
-            true,
+            false,
+            ""
+        );
+
+        $this->dom->addChild(
+            $this->Servico,
+            "CodigoPais",
+            trim($std->CodigoPais),
+            false,
             "Código de identificação do município conforme tabela do IBGE"
+        );
+
+        $this->dom->addChild(
+            $this->Servico,
+            "ExigibilidadeISS",
+            trim($std->ExigibilidadeISS),
+            true,
+            ""
+        );
+
+        $this->dom->addChild(
+            $this->Servico,
+            "IdentifNaoExigibilidade",
+            trim($std->IdentifNaoExigibilidade),
+            false,
+            ""
+        );
+
+        $this->dom->addChild(
+            $this->Servico,
+            "MunicipioIncidencia",
+            trim($std->MunicipioIncidencia),
+            false,
+            ""
+        );
+
+        $this->dom->addChild(
+            $this->Servico,
+            "NumeroProcesso",
+            trim($std->NumeroProcesso),
+            false,
+            ""
         );
     }
 
@@ -326,6 +449,19 @@ class Make
             $this->Valores,
             "ValorServicos",
             trim($std->ValorServicos),
+            true,
+            "Valor monetário.
+            Formato: 0.00 (ponto separando casa decimal)
+            Ex:
+            1.234,56 = 1234.56
+            1.000,00 = 1000.00
+            1.000,00 = 1000"
+        );
+
+        $this->dom->addChild(
+            $this->Valores,
+            "ValorDeducoes",
+            trim($std->ValorDeducoes),
             true,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -402,48 +538,6 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "IssRetido",
-            trim($std->IssRetido),
-            true,
-            "dentificação de Sim/Não
-            1 - Sim
-            2 – Não"
-        );
-
-        if ($std->IssRetido == 2){
-            
-            $this->dom->addChild(
-                $this->Valores,
-                "ValorIss",
-                trim(str_replace('-','',$std->ValorIss)),
-                false,
-                "Valor monetário.
-                Formato: 0.00 (ponto separando casa decimal)
-                Ex:
-                1.234,56 = 1234.56
-                1.000,00 = 1000.00
-                1.000,00 = 1000"
-            );
-            
-        } else {
-
-            $this->dom->addChild(
-                $this->Valores,
-                "ValorIssRetido",
-                trim(str_replace('-','',$std->ValorIssRetido)),
-                false,
-                "Valor monetário.
-                Formato: 0.00 (ponto separando casa decimal)
-                Ex:
-                1.234,56 = 1234.56
-                1.000,00 = 1000.00
-                1.000,00 = 1000"
-            );
-
-        }
-
-        $this->dom->addChild(
-            $this->Valores,
             "OutrasRetencoes",
             trim($std->ValorOutrasRetencoes),
             false,
@@ -457,8 +551,8 @@ class Make
 
         $this->dom->addChild(
             $this->Valores,
-            "BaseCalculo",
-            trim($std->BaseCalculo),
+            "ValTotTributos",
+            trim($std->AliquotaAtributos),
             false,
             "Valor monetário.
             Formato: 0.00 (ponto separando casa decimal)
@@ -467,6 +561,54 @@ class Make
             1.000,00 = 1000.00
             1.000,00 = 1000"
         );
+
+
+        $this->dom->addChild(
+            $this->Valores,
+            "ValorIss",
+            trim(str_replace('-','',$std->ValorIss)),
+            false,
+            "Valor monetário.
+            Formato: 0.00 (ponto separando casa decimal)
+            Ex:
+            1.234,56 = 1234.56
+            1.000,00 = 1000.00
+            1.000,00 = 1000"
+        );
+
+        if ($std->IssRetido == 2){
+            
+           
+            
+        } else {
+
+            // $this->dom->addChild(
+            //     $this->Valores,
+            //     "ValorIssRetido",
+            //     trim(str_replace('-','',$std->ValorIssRetido)),
+            //     false,
+            //     "Valor monetário.
+            //     Formato: 0.00 (ponto separando casa decimal)
+            //     Ex:
+            //     1.234,56 = 1234.56
+            //     1.000,00 = 1000.00
+            //     1.000,00 = 1000"
+            // );
+
+        }
+
+        // $this->dom->addChild(
+        //     $this->Valores,
+        //     "BaseCalculo",
+        //     trim($std->BaseCalculo),
+        //     false,
+        //     "Valor monetário.
+        //     Formato: 0.00 (ponto separando casa decimal)
+        //     Ex:
+        //     1.234,56 = 1234.56
+        //     1.000,00 = 1000.00
+        //     1.000,00 = 1000"
+        // );
 
         try{
             $this->dom->addChild(
@@ -498,18 +640,18 @@ class Make
 
         }
 
-        $this->dom->addChild(
-            $this->Valores,
-            "ValorLiquidoNfse",
-            trim($std->ValorLiquidoNfse),
-            false,
-            "Valor monetário.
-            Formato: 0.00 (ponto separando casa decimal)
-            Ex:
-            1.234,56 = 1234.56
-            1.000,00 = 1000.00
-            1.000,00 = 1000"
-        );
+        // $this->dom->addChild(
+        //     $this->Valores,
+        //     "ValorLiquidoNfse",
+        //     trim($std->ValorLiquidoNfse),
+        //     false,
+        //     "Valor monetário.
+        //     Formato: 0.00 (ponto separando casa decimal)
+        //     Ex:
+        //     1.234,56 = 1234.56
+        //     1.000,00 = 1000.00
+        //     1.000,00 = 1000"
+        // );
 
         $this->dom->addChild(
             $this->Valores,
@@ -636,7 +778,7 @@ class Make
 
         $this->dom->addChild(
             $this->Endereco,
-            "Cidade",
+            "CodigoMunicipio",
             trim($std->CodigoMunicipio),
             true,
             "Código da cidade"
@@ -644,7 +786,7 @@ class Make
 
         $this->dom->addChild(
             $this->Endereco,
-            "Estado",
+            "Uf",
             trim($std->Uf),
             true,
             "Sigla do estado"
@@ -668,13 +810,9 @@ class Make
 
         $this->dom->formatOutput = false;
 
-        $req = $this->dom->createElement('p1:CancelarNfseEnvio');
+        $req = $this->dom->createElement('CancelarNfseEnvio');
         
-        $req->setAttribute('xmlns:p1', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_cancelar_nfse_envio.xsd');
-        
-        $req->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
-        
-        $req->setAttribute('xmlns:ts', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_simples.xsd');
+        $req->setAttribute('xmlns', 'http://www.abrasf.org.br/nfse.xsd');
 
         $this->dom->appendChild($req);
 
@@ -693,13 +831,17 @@ class Make
             Formato AAAANNNNNNNNNNN"
         );
 
+        $CpfCnpj = $this->dom->createElement('CpfCnpj');
+
         $this->dom->addChild(
-            $identificacaoNfse,
+            $CpfCnpj,
             "Cnpj",
             $std->cnpj,
             true,
             "Número CNPJ"
         );
+
+        $identificacaoNfse->appendChild($CpfCnpj);
 
         $this->dom->addChild(
             $identificacaoNfse,
@@ -802,12 +944,10 @@ class Make
 
         $req = $this->dom->createElement('ConsultarNfseRpsEnvio');
         
-        $req->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_nfse_rps_envio.xsd');
+        $req->setAttribute('xmlns', 'http://www.abrasf.org.br/nfse.xsd');
         
-        $req->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
-
         $identificacaoRps = $this->dom->createElement('IdentificacaoRps');
-
+        
         $this->dom->addChild(
             $identificacaoRps,
             "Numero",
@@ -846,6 +986,8 @@ class Make
             "Número CNPJ"
         );
 
+        $prestador->appendChild($cpfCnpj);
+
         $this->dom->addChild(
             $prestador,
             "InscricaoMunicipal",
@@ -854,7 +996,6 @@ class Make
             "Inscrição Municipal"
         );
         
-        $prestador->appendChild($cpfCnpj);
 
         $req->appendChild($prestador);
 
@@ -875,10 +1016,8 @@ class Make
 
         $req = $this->dom->createElement('ConsultarLoteRpsEnvio');
         
-        $req->setAttribute('xmlns', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/servico_consultar_lote_rps_envio.xsd');
+        $req->setAttribute('xmlns', 'http://www.abrasf.org.br/nfse.xsd');
         
-        $req->setAttribute('xmlns:tc', 'http://www.issnetonline.com.br/webserviceabrasf/vsd/tipos_complexos.xsd');
-
         $prestador = $this->dom->createElement('Prestador');
 
         $cpfCnpj = $this->dom->createElement('CpfCnpj');

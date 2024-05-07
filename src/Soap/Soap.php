@@ -93,8 +93,6 @@ class Soap extends SoapBase{
             
             $this->responseHead = trim(substr($response, 0, $headsize));
             
-            // var_dump($response);
-            
         } catch (\Exception $e) {
 
             throw SoapException::unableToLoadCurl($e->getMessage());
