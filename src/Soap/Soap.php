@@ -82,7 +82,6 @@ class Soap extends SoapBase{
             
             $response = curl_exec($ch);
             
-            
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             
             $this->soaperror = curl_error($ch);

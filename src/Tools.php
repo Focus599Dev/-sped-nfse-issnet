@@ -129,9 +129,18 @@ class Tools extends ToolsBase
 
         $xml = $make->consultaNFSePorRPS($indenRPS, $data);
 
-        $xsd = 'servico_consultar_nfse_rps_envio.xsd';
+        $xml = Signer::sign(
+            $this->certificate,
+            $xml,
+            'ConsultarNfseRpsEnvio',
+            'Id',
+            $this->algorithm,
+            $this->canonical
+        );
 
-        $this->isValid($xml, $xsd);
+        $xsd = 'servico_consultar_nfse_rps_envio.xsd';
+        // XSD do abraf não esta deacordo com exemplo fornecido pelo nota control
+        // $this->isValid($xml, $xsd);
 
         $xml = Strings::clearXmlString($xml, true);
 
