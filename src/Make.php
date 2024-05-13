@@ -1174,4 +1174,69 @@ class Make
 
         return $this->xml;
     }
+
+    public function ConsultarUrlNfseEnvio($NumeroNfse, $data){
+
+        $this->dom = new Dom();
+
+        $this->dom->preserveWhiteSpace = false;
+
+        $this->dom->formatOutput = false;
+
+        $req = $this->dom->createElement('ConsultarUrlNfseEnvio');
+        
+        $Pedido = $this->dom->createElement('Pedido');
+
+        $req->setAttribute('xmlns', 'http://www.abrasf.org.br/nfse.xsd');
+
+        $prestador = $this->dom->createElement('Prestador');
+
+        $cpfCnpj = $this->dom->createElement('CpfCnpj');
+
+        $this->dom->addChild(
+            $cpfCnpj,
+            "Cnpj",
+            $data->cnpj,
+            true,
+            "Número CNPJ"
+        );
+
+        $prestador->appendChild($cpfCnpj);
+
+        $this->dom->addChild(
+            $prestador,
+            "InscricaoMunicipal",
+            $data->inscricaoMunicipal,
+            true,
+            "Inscrição Municipal"
+        );
+        
+
+        $Pedido->appendChild($prestador);
+
+        $this->dom->addChild(
+            $Pedido,
+            "NumeroNfse",
+            $NumeroNfse,
+            true,
+            "NumeroNfse"
+        );
+
+        $this->dom->addChild(
+            $Pedido,
+            "Pagina",
+            1,
+            true,
+            "Pagina"
+        );
+
+        $req->appendChild($Pedido);
+
+        $this->dom->appendChild($req);
+
+        $this->xml = $this->dom->saveXML();
+
+        return $this->xml;
+
+    }
 }

@@ -244,8 +244,14 @@ class Tools extends ToolsBase
         $qrcode = new QRCode($options);
         $qrcode->render($url, realpath(__DIR__ . '/../template') . '/qr.svg');
         
-
         $img = realpath(__DIR__ . '/../template' ) . '/qr.svg';
+
+        $dom = new \DOMDocument();
+        
+        $dom->loadHTML($xml->asXML()); 
+        
+        $xpath = new \DOMXPath($dom);
+
         $replace = array(
             'logo' =>  'data:image/png;base64,' . base64_encode(file_get_contents(realpath(__DIR__ . '/../template') . '/brasao.png')),
             'logoNota' =>  'data:image/jpg;base64,' . base64_encode(file_get_contents(realpath(__DIR__ . '/../template') . '/LogoNotaFiscalEletronica.jpg')),
@@ -261,7 +267,7 @@ class Tools extends ToolsBase
             'nfsnum' => substr($xml->Nfse->InfNfse->Numero, 7),
             'codveri' => $xml->Nfse->InfNfse->CodigoVerificacao,
             'emirazao' => $xml->Nfse->InfNfse->PrestadorServico->RazaoSocial,
-            'emicnpj' => $this->formatCNPJ($xml->Nfse->InfNfse->PrestadorServico->IdentificacaoPrestador->CpfCnpj->Cnpj),
+            'emicnpj' => $this->formatCNPJ($xml->Nfse->InfNfse->DeclaracaoPrestacaoServico->Prestador->CpfCnpj->Cnpj ?? ''),
             'email' => $xml->Nfse->InfNfse->PrestadorServico->Contato->Email,
             'logoPres' => $contentlogoPres,
             'inscMuniEmi' => $xml->Nfse->InfNfse->PrestadorServico->IdentificacaoPrestador->InscricaoMunicipal,
@@ -272,7 +278,7 @@ class Tools extends ToolsBase
             'EnderecoEmiCep' => $xml->Nfse->InfNfse->PrestadorServico->Endereco->Cep,
             'EnderecoEmiCidade' => ' Ribeirão Preto ' . $xml->Nfse->InfNfse->PrestadorServico->Endereco->Estado,
             'destrazao' => $xml->Nfse->InfNfse->TomadorServico->RazaoSocial,
-            'destCNPJ' => isset($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->CpfCnpj->Cnpj) ? $this->formatCNPJ($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->CpfCnpj->Cnpj) : $this->formatCPF($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->CpfCnpj->Cpf),
+            'destCNPJ' => isset($xml->Nfse->InfNfse->DeclaracaoPrestacaoServico->TomadorServico->IdentificacaoTomador->CpfCnpj->Cnpj) ? $this->formatCNPJ($xml->Nfse->InfNfse->DeclaracaoPrestacaoServico->TomadorServico->IdentificacaoTomador->CpfCnpj->Cnpj) : $this->formatCPF($xml->Nfse->InfNfse->DeclaracaoPrestacaoServico->TomadorServico->IdentificacaoTomador->CpfCnpj->Cpf),
             'inscMuniDest' => isset($xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->InscricaoMunicipal) ? $xml->Nfse->InfNfse->TomadorServico->IdentificacaoTomador->InscricaoMunicipal : '',
             'FoneDest' => $xml->Nfse->InfNfse->TomadorServico->Contato->Telefone,
             'EmailDest' => $xml->Nfse->InfNfse->TomadorServico->Contato->Email,
@@ -332,5 +338,58 @@ class Tools extends ToolsBase
         $mpdf->WriteHTML(utf8_decode($template));
 
         $mpdf->Output();
+    }
+
+    private function queryPath($path, $xpath){
+
+        $nodes = $xpath->query('//' . $path);
+
+        if (!$nodes->length)
+            return null;
+
+        foreach($nodes as $node){
+
+            return $node->nodeValue;
+        }
+
+        return null;
+    }
+
+    public function ConsultarUrlNfse($NumeroNfse, $data)
+    {
+
+        $make = new Make();
+
+        $service = 'ConsultarUrlNfse';
+
+        $soapAction = 'http://nfse.abrasf.org.br/ConsultarUrlNfse';
+
+        $xml = $make->ConsultarUrlNfseEnvio($NumeroNfse, $data);
+
+        $xml = Signer::sign(
+            $this->certificate,
+            $xml,
+            'ConsultarUrlNfseEnvio',
+            'Id',
+            $this->algorithm,
+            $this->canonical
+        );
+
+        $xml = Strings::clearXmlString($xml, true);
+
+        // Nota control não tem xsd para esse serviço
+        // $xsd = 'servico_consultar_lote_rps_envio.xsd';
+
+        // $this->isValid($xml, $xsd);
+
+        $this->lastRequest = htmlspecialchars_decode($xml);
+
+        $request = $this->envelopSOAP($xml, $service);
+
+        $response = $this->sendRequest($this->soapUrl, $soapAction, 'ConsultarLoteRps', 3, [], [], $request);
+
+        $response = $this->removeStuffs($response);
+
+        return $response;
     }
 }
